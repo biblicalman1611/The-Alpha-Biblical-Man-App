@@ -165,15 +165,20 @@ const ScriptureTool: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 lg:px-8 py-16 lg:py-24">
-      <div className="text-center mb-12 lg:mb-16">
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-stone-800 mb-4 lg:mb-6">Micro Scripture Learning</h2>
-        <p className="text-stone-600 text-base lg:text-lg max-w-2xl mx-auto leading-relaxed">
+    <div className="w-full max-w-7xl mx-auto px-4 lg:px-8 py-20 lg:py-32">
+      <div className="text-center mb-16 lg:mb-24">
+        <div className="inline-flex items-center gap-3 px-5 py-2 bg-stone-900/5 backdrop-blur-sm rounded-full border border-stone-900/10 shadow-sm mb-6">
+          <span className="text-xs lg:text-sm font-bold tracking-[0.25em] text-stone-700 uppercase">
+            AI-Powered Wisdom
+          </span>
+        </div>
+        <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-stone-900 mb-6 lg:mb-8 tracking-tight">Micro Scripture Learning</h2>
+        <p className="text-stone-600 text-lg lg:text-2xl max-w-3xl mx-auto leading-relaxed font-light">
           Enter a feeling, a topic, or a question. Receive a micro-dose of ancient KJV wisdom tailored to your moment.
         </p>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-xl border border-stone-100 p-8 md:p-12 lg:p-16 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-white to-stone-50/50 rounded-3xl shadow-2xl border border-stone-200/50 p-10 md:p-14 lg:p-20 relative overflow-hidden backdrop-blur-sm">
         {/* Input Section */}
         <form onSubmit={handleSearch} className="relative z-10 max-w-2xl mx-auto">
           <div className="flex flex-col md:flex-row gap-4">
@@ -182,12 +187,12 @@ const ScriptureTool: React.FC = () => {
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder="e.g., Anxiety, Purpose, Grief, Joy..."
-              className="flex-1 p-4 rounded-lg border border-stone-300 focus:ring-2 focus:ring-stone-500 focus:border-transparent outline-none bg-stone-50 text-stone-900 placeholder-stone-400 transition-all"
+              className="flex-1 p-5 rounded-xl border-2 border-stone-300 focus:ring-4 focus:ring-stone-900/10 focus:border-stone-900 outline-none bg-white text-stone-900 placeholder-stone-400 transition-all text-lg shadow-sm"
             />
             <button
               type="submit"
               disabled={loading || !topic.trim()}
-              className="px-8 py-4 bg-stone-800 text-white font-medium rounded-lg hover:bg-stone-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+              className="px-10 py-5 bg-stone-900 text-white font-semibold rounded-xl hover:bg-stone-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 text-lg"
             >
               {loading ? (
                 <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -226,9 +231,9 @@ const ScriptureTool: React.FC = () => {
         )}
 
         {result && (
-          <div className="mt-12 lg:mt-16 fade-in grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+          <div className="mt-16 lg:mt-24 fade-in grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
             {/* Card 1: The Verse - Wide Card */}
-            <div className="md:col-span-2 bg-stone-50 p-8 md:p-10 lg:p-14 rounded-2xl border border-stone-200 shadow-sm relative">
+            <div className="md:col-span-2 bg-gradient-to-br from-stone-50 to-stone-100/50 p-10 md:p-12 lg:p-16 rounded-3xl border border-stone-200/80 shadow-xl relative backdrop-blur-sm">
               <div className="flex justify-between items-center mb-6">
                  <span className="text-xs font-bold tracking-widest text-stone-400 uppercase">Scripture (KJV)</span>
               </div>
@@ -279,10 +284,10 @@ const ScriptureTool: React.FC = () => {
             </div>
 
             {/* Card 2: Micro Lesson - Light Card */}
-            <div className="bg-white p-8 rounded-2xl border border-stone-100 shadow-sm flex flex-col">
-              <div className="flex justify-between items-start mb-4">
-                <span className="text-xs font-bold tracking-widest text-stone-400 uppercase flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand-gold"></span>
+            <div className="bg-white p-10 rounded-3xl border border-stone-200 shadow-xl flex flex-col hover:shadow-2xl transition-shadow duration-300">
+              <div className="flex justify-between items-start mb-6">
+                <span className="text-xs font-bold tracking-widest text-stone-500 uppercase flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-brand-gold"></span>
                   Micro Lesson
                 </span>
                 <button 
@@ -299,18 +304,18 @@ const ScriptureTool: React.FC = () => {
                    )}
                  </button>
               </div>
-              <p className="text-lg text-stone-700 leading-relaxed font-serif flex-grow">
+              <p className="text-xl text-stone-700 leading-relaxed font-serif flex-grow font-light">
                 {result.microLesson}
               </p>
             </div>
 
             {/* Card 3: Reflection - Dark Card */}
-            <div className="bg-stone-900 p-8 rounded-2xl border border-stone-800 shadow-xl flex flex-col">
-              <span className="text-xs font-bold tracking-widest text-stone-500 uppercase mb-4 flex items-center gap-2">
-                 <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+            <div className="bg-gradient-to-br from-stone-900 via-stone-800 to-stone-900 p-10 rounded-3xl border border-stone-700/50 shadow-2xl flex flex-col hover:shadow-3xl transition-shadow duration-300">
+              <span className="text-xs font-bold tracking-widest text-stone-400 uppercase mb-6 flex items-center gap-2">
+                 <span className="w-2 h-2 rounded-full bg-white"></span>
                  Reflection
               </span>
-              <p className="text-xl font-serif text-stone-100 leading-relaxed flex-grow italic">
+              <p className="text-2xl font-serif text-stone-100 leading-relaxed flex-grow italic font-light">
                 {result.reflectionQuestion}
               </p>
             </div>

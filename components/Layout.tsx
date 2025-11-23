@@ -45,13 +45,13 @@ const Layout: React.FC<LayoutProps> = ({
       <header
         className={`fixed top-0 w-full z-40 transition-all duration-500 border-b ${
           scrolled || mobileMenuOpen
-            ? 'bg-white/95 backdrop-blur-md shadow-sm py-4 border-stone-200/50'
-            : 'bg-transparent py-6 border-transparent'
+            ? 'bg-white/98 backdrop-blur-xl shadow-lg py-4 border-stone-200/50'
+            : 'bg-white/80 backdrop-blur-md py-5 border-stone-200/30'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center relative">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 flex justify-between items-center relative">
           <div
-            className="text-xl md:text-2xl font-serif font-bold tracking-tight cursor-pointer uppercase select-none z-50 relative"
+            className="text-2xl md:text-3xl font-serif font-bold tracking-tight cursor-pointer uppercase select-none z-50 relative hover:text-stone-700 transition-colors"
             onClick={() => onNavigate(NavSection.HOME)}
           >
             The Biblical Man
