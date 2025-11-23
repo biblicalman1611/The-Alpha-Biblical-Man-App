@@ -1,3 +1,4 @@
+
 export interface BlogPost {
   id: string;
   title: string;
@@ -31,6 +32,20 @@ export interface ArticleInsight {
   corePrinciple: string;
   actionItem: string;
   reflection: string;
+}
+
+export interface MemberProfile {
+  name: string;
+  location: string;
+  bio: string;
+  imageUrl: string;
+  joinDate: string;
+}
+
+export interface DailyTask {
+  id: string;
+  label: string;
+  completed: boolean;
 }
 
 export enum NavSection {

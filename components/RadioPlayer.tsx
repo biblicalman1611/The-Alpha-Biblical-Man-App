@@ -1,10 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-// Primary stream URL (HTTPS)
-// Adding the semicolon /; is a Shoutcast trick to force the server to serve the stream
-// instead of the status page, resolving "No supported source" errors.
+// Using the semi-colon suffix is a common Shoutcast hack to force stream playback 
+// on browsers that might otherwise try to render the status page.
 const STREAM_URL = "https://s6.voscast.com:11272/;";
-// Fallback URL for external player
 const EXTERNAL_STREAM_URL = "http://s6.voscast.com:11272/stream";
 
 const RadioPlayer: React.FC = () => {
@@ -31,16 +29,13 @@ const RadioPlayer: React.FC = () => {
     };
     const handleError = (e: Event) => {
       const target = e.target as HTMLAudioElement;
-      const errorCode = target.error ? target.error.code : 'unknown';
-      const errorMessage = target.error ? target.error.message : 'unknown';
-      
-      console.warn(`Radio Playback Error (Code ${errorCode}):`, errorMessage);
+      console.warn(`Radio Playback Error:`, target.error);
       
       setIsPlaying(false);
       setIsLoading(false);
       setHasError(true);
       
-      // If we are expanded and get an error, stay expanded so user sees the "Offline/Error" state
+      // Force expand to show the error/fallback UI
       setIsExpanded(true);
     };
 
@@ -63,22 +58,33 @@ const RadioPlayer: React.FC = () => {
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
-      // Clean up src to stop downloading
-      audioRef.current.src = "";
+      // Clean up src to stop downloading/buffering
+      audioRef.current.removeAttribute('src'); 
       audioRef.current.load();
     } else {
       setIsLoading(true);
       setHasError(false);
       
       try {
-        // Set src immediately before playing to ensure fresh stream
+        // Set src immediately before playing to ensure fresh stream connection
         audioRef.current.src = STREAM_URL;
         audioRef.current.load();
         
-        await audioRef.current.play();
-        setIsExpanded(true);
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              setIsExpanded(true);
+            })
+            .catch((error) => {
+              console.error("Playback start failed:", error);
+              setIsLoading(false);
+              setHasError(true);
+              setIsExpanded(true);
+            });
+        }
       } catch (error) {
-        console.error("Playback start failed:", error);
+        console.error("Setup failed:", error);
         setIsLoading(false);
         setHasError(true);
         setIsExpanded(true);
@@ -95,9 +101,14 @@ const RadioPlayer: React.FC = () => {
   return (
     <div className={`fixed bottom-6 right-6 z-50 flex items-center transition-all duration-300 ${isExpanded ? 'gap-3' : 'gap-0'}`}>
       
+      {/* 
+        Removed crossOrigin="anonymous". 
+        Radio streams often lack CORS headers. Requesting 'anonymous' causes the browser 
+        to block the request if the Access-Control-Allow-Origin header is missing.
+        Standard audio playback does not require CORS unless we use Web Audio API analysis.
+      */}
       <audio
         ref={audioRef}
-        crossOrigin="anonymous"
         preload="none"
       />
 
@@ -110,7 +121,7 @@ const RadioPlayer: React.FC = () => {
         <div className="flex flex-col min-w-[160px] whitespace-nowrap">
           <span className="text-[10px] font-bold uppercase tracking-widest text-brand-gold flex items-center gap-1.5">
             {hasError ? (
-               <span className="text-red-400">Stream Unavailable</span>
+               <span className="text-red-400">Stream Blocked</span>
             ) : isPlaying ? (
                <>
                  <span className="relative flex h-2 w-2">
@@ -128,7 +139,7 @@ const RadioPlayer: React.FC = () => {
             {hasError ? (
                <button 
                 onClick={openExternalPlayer}
-                className="underline hover:text-white text-stone-300"
+                className="underline hover:text-white text-stone-300 font-bold"
                >
                  Launch External Player &rarr;
                </button>

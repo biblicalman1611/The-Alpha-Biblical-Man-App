@@ -1,4 +1,6 @@
+
 import React, { useState } from 'react';
+import { MemberProfile, DailyTask } from '../types';
 
 interface PrayerRequest {
   id: string;
@@ -11,6 +13,35 @@ interface PrayerRequest {
 }
 
 const MembersArea: React.FC = () => {
+  // --- State: Member Profile ---
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profile, setProfile] = useState<MemberProfile>({
+    name: "Brother Thomas",
+    location: "Nashville, TN",
+    joinDate: "September 2023",
+    imageUrl: "https://picsum.photos/seed/thomas/200/200?grayscale",
+    bio: "Husband, father of three. Seeking to build a legacy of faith and discipline. Currently working through Nehemiah and focusing on early morning prayer. 'As for me and my house, we will serve the Lord.'",
+  });
+
+  // --- State: 40-Day Protocol ---
+  const [currentDay, setCurrentDay] = useState(12);
+  const [dailyTasks, setDailyTasks] = useState<DailyTask[]>([
+    { id: '1', label: 'Read 1 Chapter (KJV)', completed: true },
+    { id: '2', label: 'Prayer (15 min)', completed: true },
+    { id: '3', label: 'Physical Training', completed: false },
+    { id: '4', label: 'No Vice / Sugar', completed: false },
+    { id: '5', label: 'Journal Reflection', completed: false },
+  ]);
+
+  // Mock "Micro-Learning" content for the current day
+  const dailyFocus = {
+    theme: "The Discipline of Silence",
+    scripture: "Proverbs 13:3",
+    text: "He that keepeth his mouth keepeth his life: but he that openeth wide his lips shall have destruction.",
+    action: "Practice silence today. Speak only when necessary."
+  };
+
+  // --- State: Prayer Wall ---
   const [requests, setRequests] = useState<PrayerRequest[]>([
     {
       id: '1',
@@ -29,15 +60,6 @@ const MembersArea: React.FC = () => {
       count: 24,
       hasPrayed: true,
       time: '5h ago'
-    },
-    {
-      id: '3',
-      author: 'David R.',
-      initials: 'DR',
-      content: 'My son is struggling with his faith. Pray for a prodigal return.',
-      count: 8,
-      hasPrayed: false,
-      time: '1d ago'
     }
   ]);
 
@@ -54,33 +76,197 @@ const MembersArea: React.FC = () => {
     }));
   };
 
+  const toggleTask = (id: string) => {
+    setDailyTasks(prev => prev.map(task => 
+      task.id === id ? { ...task, completed: !task.completed } : task
+    ));
+  };
+
+  const handleSaveProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsEditingProfile(false);
+  };
+
   return (
     <div className="py-24 bg-stone-50 min-h-[80vh]">
       <div className="max-w-6xl mx-auto px-4">
-        {/* Header */}
-        <div className="mb-12 border-b border-stone-200 pb-6 flex flex-col md:flex-row justify-between items-end">
-          <div>
-            <span className="text-xs font-bold tracking-[0.2em] text-stone-500 uppercase mb-2 block">
-              Inner Circle
-            </span>
-            <h2 className="text-4xl font-serif text-stone-900">Member Dashboard</h2>
-          </div>
-          <div className="mt-4 md:mt-0 text-right">
-             <div className="text-sm font-serif italic text-stone-600">
-               {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-             </div>
-             <span className="inline-flex items-center px-3 py-1 mt-2 rounded-full text-xs font-medium bg-stone-900 text-stone-50">
-               <span className="w-1.5 h-1.5 rounded-full bg-green-400 mr-2"></span>
-               Active Membership
-             </span>
+        
+        {/* Header & Profile Summary */}
+        <div className="mb-12 border-b border-stone-200 pb-8">
+          <div className="flex flex-col md:flex-row gap-8 items-start">
+            
+            {/* Avatar */}
+            <div className="flex-shrink-0 relative group">
+              <img 
+                src={profile.imageUrl} 
+                alt="Profile" 
+                className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-white shadow-lg"
+              />
+              <button 
+                onClick={() => setIsEditingProfile(!isEditingProfile)}
+                className="absolute bottom-0 right-0 bg-stone-900 text-white p-2 rounded-full shadow-md hover:bg-stone-700 transition-colors"
+                title="Edit Profile"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                  <path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-12.15 12.15a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32L19.513 8.2z" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Profile Info or Edit Form */}
+            <div className="flex-grow w-full">
+              {isEditingProfile ? (
+                <form onSubmit={handleSaveProfile} className="bg-white p-6 rounded-xl shadow-sm border border-stone-200 space-y-4 animate-fadeIn">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Name</label>
+                      <input 
+                        type="text" 
+                        value={profile.name} 
+                        onChange={(e) => setProfile({...profile, name: e.target.value})}
+                        className="w-full p-2 border border-stone-300 rounded focus:ring-1 focus:ring-stone-900 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Location</label>
+                      <input 
+                        type="text" 
+                        value={profile.location} 
+                        onChange={(e) => setProfile({...profile, location: e.target.value})}
+                        className="w-full p-2 border border-stone-300 rounded focus:ring-1 focus:ring-stone-900 outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Profile Image URL</label>
+                    <input 
+                      type="text" 
+                      value={profile.imageUrl} 
+                      onChange={(e) => setProfile({...profile, imageUrl: e.target.value})}
+                      className="w-full p-2 border border-stone-300 rounded focus:ring-1 focus:ring-stone-900 outline-none text-sm"
+                      placeholder="https://..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Bio (Share your story)</label>
+                    <textarea 
+                      value={profile.bio} 
+                      onChange={(e) => setProfile({...profile, bio: e.target.value})}
+                      className="w-full p-2 border border-stone-300 rounded focus:ring-1 focus:ring-stone-900 outline-none h-24"
+                      placeholder="Tell the brotherhood about yourself..."
+                    />
+                  </div>
+                  <div className="flex justify-end gap-3">
+                    <button 
+                      type="button" 
+                      onClick={() => setIsEditingProfile(false)}
+                      className="px-4 py-2 text-sm text-stone-600 hover:text-stone-900"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      type="submit" 
+                      className="px-6 py-2 bg-stone-900 text-white text-sm font-medium rounded hover:bg-stone-700"
+                    >
+                      Save Profile
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div>
+                   <div className="flex justify-between items-start">
+                      <div>
+                        <h2 className="text-3xl font-serif text-stone-900">{profile.name}</h2>
+                        <p className="text-stone-500 text-sm mb-4 flex items-center gap-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-stone-400">
+                            <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                          </svg>
+                          {profile.location} • Member since {profile.joinDate}
+                        </p>
+                      </div>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-stone-900 text-stone-50 shadow-sm">
+                        <span className="w-1.5 h-1.5 rounded-full bg-brand-gold mr-2 animate-pulse"></span>
+                        Active Member
+                      </span>
+                   </div>
+                   <p className="text-stone-700 leading-relaxed max-w-2xl font-serif text-lg">
+                     {profile.bio}
+                   </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content Column */}
+          
+          {/* LEFT COLUMN */}
           <div className="lg:col-span-2 space-y-8">
             
-            {/* Featured Study Module */}
+            {/* The 40-Day Protocol Tracker */}
+            <div className="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+               <div className="p-6 bg-stone-900 text-white flex justify-between items-center">
+                 <div>
+                   <span className="text-xs font-bold tracking-[0.2em] text-brand-gold uppercase mb-1 block">
+                      Spiritual Growth
+                   </span>
+                   <h3 className="text-xl font-serif">The 40-Day Protocol</h3>
+                 </div>
+                 <div className="text-right">
+                    <div className="text-3xl font-serif font-bold text-white">{currentDay}<span className="text-stone-500 text-lg">/40</span></div>
+                    <div className="text-xs text-stone-400 uppercase tracking-wider">Day Streak</div>
+                 </div>
+               </div>
+               
+               <div className="p-6">
+                 {/* Progress Bar */}
+                 <div className="mb-8">
+                   <div className="w-full bg-stone-100 rounded-full h-2">
+                      <div className="bg-brand-gold h-2 rounded-full transition-all duration-1000" style={{ width: `${(currentDay / 40) * 100}%` }}></div>
+                   </div>
+                 </div>
+
+                 {/* Daily Micro-Learning Content */}
+                 <div className="mb-8 p-5 bg-stone-50 rounded-lg border border-stone-200">
+                    <span className="text-xs font-bold text-brand-gold uppercase tracking-widest mb-2 block">Day {currentDay} Micro-Learning</span>
+                    <h5 className="font-serif text-lg text-stone-900 font-bold mb-1">{dailyFocus.theme}</h5>
+                    <p className="text-stone-600 italic text-sm mb-3">"{dailyFocus.text}" — {dailyFocus.scripture}</p>
+                    <div className="flex items-start gap-2 text-xs text-stone-500 font-medium bg-white p-2 rounded border border-stone-100">
+                       <span className="uppercase text-stone-900 font-bold">Action:</span> {dailyFocus.action}
+                    </div>
+                 </div>
+
+                 <h4 className="text-sm font-bold uppercase text-stone-500 mb-4">Daily Non-Negotiables</h4>
+                 <div className="space-y-3">
+                   {dailyTasks.map(task => (
+                     <button 
+                        key={task.id}
+                        onClick={() => toggleTask(task.id)}
+                        className={`w-full flex items-center p-3 rounded-lg border transition-all ${
+                          task.completed 
+                            ? 'bg-stone-50 border-stone-200 opacity-60' 
+                            : 'bg-white border-stone-300 hover:border-stone-900 shadow-sm'
+                        }`}
+                     >
+                        <div className={`w-6 h-6 rounded border flex items-center justify-center mr-4 transition-colors ${
+                          task.completed ? 'bg-stone-900 border-stone-900' : 'bg-white border-stone-300'
+                        }`}>
+                          {task.completed && (
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-white">
+                              <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </div>
+                        <span className={`text-sm font-medium ${task.completed ? 'text-stone-400 line-through' : 'text-stone-900'}`}>
+                          {task.label}
+                        </span>
+                     </button>
+                   ))}
+                 </div>
+               </div>
+            </div>
+
+            {/* Bible Study Module (Audio + Text) */}
             <div className="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
               <div className="p-6 border-b border-stone-100 flex justify-between items-center">
                 <h3 className="text-xl font-serif text-stone-900 flex items-center gap-2">
@@ -89,55 +275,55 @@ const MembersArea: React.FC = () => {
                   </svg>
                   This Month's Study
                 </h3>
-                <span className="text-xs font-bold uppercase tracking-wider text-stone-400">Oct 2023</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-stone-400">Nehemiah</span>
               </div>
               
-              <div className="p-6 md:p-8">
-                <h4 className="text-3xl font-serif text-stone-900 mb-2">Nehemiah: Rebuilding the Walls</h4>
-                <p className="text-stone-500 mb-6 font-serif italic text-lg">
-                  "The God of heaven, he will prosper us; therefore we his servants will arise and build."
-                </p>
-
-                {/* Video Placeholder */}
-                <div className="relative aspect-video bg-stone-900 rounded-lg overflow-hidden group cursor-pointer mb-6 shadow-md">
-                   <img 
-                    src="https://picsum.photos/seed/nehemiah/800/450?grayscale" 
-                    alt="Study Video Thumbnail" 
-                    className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-300"
-                   />
-                   <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm border border-white/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-white ml-1">
-                          <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                   </div>
-                   <div className="absolute bottom-4 right-4 px-2 py-1 bg-black/70 text-white text-xs rounded font-medium">
-                     45:20
-                   </div>
+              {/* Audio Player Header */}
+              <div className="bg-stone-50 p-6 border-b border-stone-100">
+                <h4 className="text-2xl font-serif text-stone-900 mb-2">Rebuilding the Walls</h4>
+                <div className="flex items-center gap-4 mt-4">
+                  <audio controls className="w-full h-10 accent-stone-900">
+                    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg" />
+                    Your browser does not support the audio element.
+                  </audio>
                 </div>
-
-                {/* Resources */}
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <button className="flex-1 flex items-center justify-center gap-3 p-4 border border-stone-200 rounded-lg hover:border-stone-900 hover:bg-stone-50 transition-all group">
-                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-stone-400 group-hover:text-stone-900">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                    </svg>
-                    <div className="text-left">
-                      <span className="block text-sm font-bold text-stone-900">Download Guide</span>
-                      <span className="block text-xs text-stone-500">PDF • 2.4 MB</span>
-                    </div>
-                  </button>
-                   <button className="flex-1 flex items-center justify-center gap-3 p-4 border border-stone-200 rounded-lg hover:border-stone-900 hover:bg-stone-50 transition-all group">
-                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-stone-400 group-hover:text-stone-900">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
-                    </svg>
-                    <div className="text-left">
-                      <span className="block text-sm font-bold text-stone-900">Audio Version</span>
-                      <span className="block text-xs text-stone-500">MP3 • 15 MB</span>
-                    </div>
-                  </button>
+                <div className="flex justify-between items-center mt-2 text-xs text-stone-500 uppercase tracking-wider font-bold">
+                   <span>Audio Lesson</span>
+                   <span>24 Min Listen</span>
                 </div>
+              </div>
+
+              {/* Text Content - Read Along */}
+              <div className="p-8 md:p-10 max-h-[500px] overflow-y-auto custom-scrollbar">
+                <article className="prose prose-stone max-w-none font-serif">
+                   <p className="lead text-xl italic text-stone-600 mb-6">
+                     "And I said unto them, You see the distress that we are in, how Jerusalem lieth waste, and the gates thereof are burned with fire: come, and let us build up the wall of Jerusalem, that we be no more a reproach." — Nehemiah 2:17
+                   </p>
+                   <h3 className="text-lg font-bold uppercase text-stone-900 mb-4">The Burden of Ruin</h3>
+                   <p className="mb-4 text-stone-800 leading-relaxed">
+                     Nehemiah was comfortable. He served in the citadel of Susa, cupbearer to the King. Yet, when he heard the report of his people—that the walls were broken down and the gates burned—he sat down and wept. 
+                   </p>
+                   <p className="mb-4 text-stone-800 leading-relaxed">
+                     The mark of a Biblical man is not that he can endure hardship, but that he cannot endure the ruin of what God loves. While others walked past the rubble, accepting it as the "new normal," Nehemiah felt the weight of it in his soul.
+                   </p>
+                   <h3 className="text-lg font-bold uppercase text-stone-900 mb-4 mt-8">Prayer Before Action</h3>
+                   <p className="mb-4 text-stone-800 leading-relaxed">
+                     Before he laid a single stone, Nehemiah spent days in fasting and prayer. He did not rush to fix the problem with human strength. He went first to the Architect.
+                   </p>
+                   <p className="mb-4 text-stone-800 leading-relaxed">
+                     In our lives, we often reverse this. We try to fix our families, our finances, or our habits with sheer grit, only to burn out. Rebuilding requires a blueprint from heaven.
+                   </p>
+                   <h3 className="text-lg font-bold uppercase text-stone-900 mb-4 mt-8">The Sword and The Trowel</h3>
+                   <p className="mb-4 text-stone-800 leading-relaxed">
+                     Later, as the work began, opposition rose. Sanballat and Tobiah mocked them. They threatened violence. Did Nehemiah stop? No. He armed the men.
+                   </p>
+                   <p className="mb-4 text-stone-800 leading-relaxed">
+                     "Every one with one of his hands wrought in the work, and with the other hand held a weapon." (Nehemiah 4:17).
+                   </p>
+                   <p className="mb-4 text-stone-800 leading-relaxed">
+                     This is our posture today. We build (our legacy, our work, our discipline) while simultaneously holding the sword (spiritual warfare, guarding against vice). You cannot build if you cannot fight.
+                   </p>
+                </article>
               </div>
             </div>
 
@@ -189,71 +375,47 @@ const MembersArea: React.FC = () => {
             </div>
           </div>
 
-          {/* Sidebar Column */}
+          {/* SIDEBAR COLUMN */}
           <div className="space-y-8">
              
-             {/* Next Event */}
-             <div className="bg-stone-900 text-white p-8 rounded-xl relative overflow-hidden">
-               <div className="absolute top-0 right-0 p-3 opacity-10">
-                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-32 h-32">
-                   <path fillRule="evenodd" d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3A.75.75 0 0118 3v1.5h.75a3 3 0 013 3v11.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V7.5a3 3 0 013-3H6V3a.75.75 0 01.75-.75zm13.5 9a1.5 1.5 0 00-1.5-1.5H5.25a1.5 1.5 0 00-1.5 1.5v7.5a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5v-7.5z" clipRule="evenodd" />
-                 </svg>
-               </div>
-               
-               <span className="relative z-10 inline-block px-2 py-1 rounded bg-brand-gold text-stone-900 text-xs font-bold uppercase tracking-wider mb-4">
-                 Upcoming
+             {/* News & Updates */}
+             <div className="bg-stone-900 text-white p-6 rounded-xl relative overflow-hidden">
+               <span className="relative z-10 inline-block px-2 py-1 rounded bg-stone-700 text-stone-200 text-[10px] font-bold uppercase tracking-wider mb-4">
+                 News Blasts
                </span>
-               <h4 className="relative z-10 font-serif text-2xl mb-1">Annual Retreat</h4>
-               <p className="relative z-10 text-stone-400 text-sm mb-6">October 14-16, 2023</p>
+               <h4 className="relative z-10 font-serif text-2xl mb-4">Congregation Updates</h4>
                
-               <div className="relative z-10 space-y-3">
-                 <div className="flex items-center gap-3 text-sm text-stone-300">
-                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                   </svg>
-                   Black Mountain, NC
+               <div className="relative z-10 space-y-4">
+                 <div className="border-l-2 border-brand-gold pl-4 py-1">
+                   <p className="text-xs text-stone-400 mb-1">Oct 12, 2023</p>
+                   <p className="text-sm text-stone-200 leading-snug">
+                     New audio series on "The Theology of Work" drops next Monday. Prepare your hearts.
+                   </p>
                  </div>
-               </div>
-
-               <button className="relative z-10 mt-8 w-full py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition-colors border border-white/10">
-                 RSVP Now
-               </button>
-             </div>
-
-             {/* Progress / Stats */}
-             <div className="bg-white p-6 rounded-xl border border-stone-200">
-               <h4 className="font-serif text-lg mb-6 text-stone-900">Your Journey</h4>
-               <div className="space-y-6">
-                 <div>
-                   <div className="flex justify-between text-xs font-bold uppercase text-stone-500 mb-2">
-                     <span>Studies Completed</span>
-                     <span>3/12</span>
-                   </div>
-                   <div className="w-full bg-stone-100 rounded-full h-2">
-                     <div className="bg-stone-900 h-2 rounded-full" style={{ width: '25%' }}></div>
-                   </div>
+                 <div className="border-l-2 border-stone-700 pl-4 py-1">
+                   <p className="text-xs text-stone-400 mb-1">Oct 08, 2023</p>
+                   <p className="text-sm text-stone-300 leading-snug">
+                     Welcome to the 50 new brothers who joined from the Substack this week. Iron sharpens iron.
+                   </p>
                  </div>
-                 
-                 <div className="grid grid-cols-2 gap-4 pt-4 border-t border-stone-100">
-                   <div className="text-center">
-                     <div className="text-2xl font-bold text-stone-900 font-serif">12</div>
-                     <div className="text-[10px] text-stone-400 uppercase tracking-wider">Days Streak</div>
-                   </div>
-                   <div className="text-center">
-                     <div className="text-2xl font-bold text-stone-900 font-serif">5</div>
-                     <div className="text-[10px] text-stone-400 uppercase tracking-wider">Prayers</div>
-                   </div>
+                  <div className="border-l-2 border-stone-700 pl-4 py-1">
+                   <p className="text-xs text-stone-400 mb-1">Oct 01, 2023</p>
+                   <p className="text-sm text-stone-300 leading-snug">
+                     Reminder: The 40-Day Protocol resets on the 1st of next month. Finish strong.
+                   </p>
                  </div>
                </div>
              </div>
 
              {/* Quick Links */}
              <div className="bg-white p-6 rounded-xl border border-stone-200">
-               <h4 className="font-serif text-lg mb-4 text-stone-900">Quick Links</h4>
+               <h4 className="font-serif text-lg mb-4 text-stone-900">Account & Support</h4>
                <ul className="space-y-2">
                  <li>
-                   <button className="w-full text-left px-3 py-2 rounded hover:bg-stone-50 text-sm text-stone-600 transition-colors flex items-center justify-between group">
+                   <button 
+                    onClick={() => setIsEditingProfile(true)}
+                    className="w-full text-left px-3 py-2 rounded hover:bg-stone-50 text-sm text-stone-600 transition-colors flex items-center justify-between group"
+                   >
                      <span>Update Profile</span>
                      <span className="text-stone-300 group-hover:text-stone-500">→</span>
                    </button>
@@ -265,16 +427,16 @@ const MembersArea: React.FC = () => {
                      rel="noreferrer"
                      className="w-full text-left px-3 py-2 rounded hover:bg-stone-50 text-sm text-stone-600 transition-colors flex items-center justify-between group"
                    >
-                     <span>Manage Subscription</span>
+                     <span>Manage Subscription ($3/mo)</span>
                      <span className="text-stone-300 group-hover:text-stone-500">→</span>
                    </a>
                  </li>
                  <li>
                    <a 
-                     href="mailto:contact@thebiblicalmantruth.com"
+                     href="mailto:sam@thebiblicalmantruth.com"
                      className="w-full text-left px-3 py-2 rounded hover:bg-stone-50 text-sm text-stone-600 transition-colors flex items-center justify-between group"
                    >
-                     <span>Contact Support</span>
+                     <span>Contact Support (Sam AI)</span>
                      <span className="text-stone-300 group-hover:text-stone-500">→</span>
                    </a>
                  </li>
