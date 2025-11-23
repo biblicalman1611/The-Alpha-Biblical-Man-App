@@ -18,6 +18,7 @@ export interface Product {
   imageUrl: string;
   cta: string;
   link: string; // Link to gumroad product
+  isFeatured?: boolean;
 }
 
 export interface ScriptureResponse {

@@ -1,3 +1,4 @@
+
 import { BlogPost, Product } from './types';
 
 const PLACEHOLDER_TEXT_1 = `
@@ -61,21 +62,31 @@ export const BLOG_POSTS: BlogPost[] = [
 
 export const PRODUCTS: Product[] = [
   {
-    id: 'p1',
-    name: "The Biblical Man Bundle",
-    description: "The complete collection of resources to help you lead your family and community with conviction.",
-    price: "Check Price",
-    imageUrl: "https://picsum.photos/seed/biblical1/400/500?grayscale",
-    cta: "View on Gumroad",
+    id: 'vault-platinum',
+    name: "The Vault: Platinum Edition",
+    description: "The complete archive of biblical masculinity. Includes every essay, audio lesson, and tactical guide ever released, plus exclusive access to the private community.",
+    price: "$297",
+    imageUrl: "https://picsum.photos/seed/vault/800/600?grayscale", 
+    cta: "Get Lifetime Access",
+    link: "https://biblicalman.gumroad.com",
+    isFeatured: true
+  },
+  {
+    id: 'morning-liturgy',
+    name: "The Morning Liturgy",
+    description: "A structured protocol for the first hour of your day. Prayer, movement, and scripture to align your spirit before the world attacks.",
+    price: "$27",
+    imageUrl: "https://picsum.photos/seed/liturgy/400/500?grayscale",
+    cta: "Start the Protocol",
     link: "https://biblicalman.gumroad.com"
   },
   {
-    id: 'p2',
-    name: "Spiritual Discipline Guide",
-    description: "A practical framework for prayer, fasting, and scripture memory designed for the busy man.",
-    price: "Check Price",
-    imageUrl: "https://picsum.photos/seed/biblical2/401/500?grayscale",
-    cta: "Get the Guide",
+    id: 'strength-training',
+    name: "Biblical Strength Training",
+    description: "Physical training is of some value. A 12-week program designed to build a body capable of protecting and serving.",
+    price: "$45",
+    imageUrl: "https://picsum.photos/seed/strength/400/500?grayscale",
+    cta: "Train for War",
     link: "https://biblicalman.gumroad.com"
   }
 ];

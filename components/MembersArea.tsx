@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { MemberProfile, DailyTask } from '../types';
+import ShareModal from './ShareModal';
 
 interface PrayerRequest {
   id: string;
@@ -15,6 +16,7 @@ interface PrayerRequest {
 const MembersArea: React.FC = () => {
   // --- State: Member Profile ---
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [profile, setProfile] = useState<MemberProfile>({
     name: "Brother Thomas",
     location: "Nashville, TN",
@@ -22,6 +24,10 @@ const MembersArea: React.FC = () => {
     imageUrl: "https://picsum.photos/seed/thomas/200/200?grayscale",
     bio: "Husband, father of three. Seeking to build a legacy of faith and discipline. Currently working through Nehemiah and focusing on early morning prayer. 'As for me and my house, we will serve the Lord.'",
   });
+
+  // --- State: Subscription Management ---
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  const [subStatus, setSubStatus] = useState<'Active' | 'Cancelled'>('Active');
 
   // --- State: 40-Day Protocol ---
   const [currentDay, setCurrentDay] = useState(12);
@@ -87,8 +93,113 @@ const MembersArea: React.FC = () => {
     setIsEditingProfile(false);
   };
 
+  const handleCancelSubscription = () => {
+    if (window.confirm("Are you sure you want to cancel your subscription? You will lose access to the Member Area at the end of the billing cycle.")) {
+      setSubStatus('Cancelled');
+    }
+  };
+
   return (
     <div className="py-24 bg-stone-50 min-h-[80vh]">
+      {/* Share Modal */}
+      {showShareModal && (
+        <ShareModal 
+          postTitle={`Profile: ${profile.name} - The Biblical Man`}
+          postUrl="https://thebiblicalmantruth.com/members/profile/brother-thomas" 
+          onClose={() => setShowShareModal(false)}
+        />
+      )}
+
+      {/* Subscription Modal */}
+      {showSubscriptionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 backdrop-blur-sm p-4 fade-in" onClick={() => setShowSubscriptionModal(false)}>
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="p-6 border-b border-stone-100 flex justify-between items-center">
+              <h3 className="text-xl font-serif text-stone-900">Subscription Management</h3>
+              <button onClick={() => setShowSubscriptionModal(false)} className="text-stone-400 hover:text-stone-900">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-8">
+              {/* Current Plan */}
+              <div>
+                <span className="text-xs font-bold uppercase text-stone-500 tracking-wider mb-2 block">Current Plan</span>
+                <div className="flex justify-between items-start bg-stone-50 p-4 rounded-lg border border-stone-200">
+                  <div>
+                    <h4 className="font-bold text-stone-900 text-lg">The Inner Circle</h4>
+                    <p className="text-stone-600 text-sm">$3.00 USD / month</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${subStatus === 'Active' ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                      <span className="text-sm font-medium text-stone-700">{subStatus}</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-stone-500 uppercase">Next Billing</p>
+                    <p className="font-serif text-stone-900">{subStatus === 'Active' ? 'Nov 01, 2023' : 'Expiring Soon'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Billing History */}
+              <div>
+                <span className="text-xs font-bold uppercase text-stone-500 tracking-wider mb-2 block">Billing History</span>
+                <div className="border border-stone-200 rounded-lg overflow-hidden">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-stone-100 text-stone-500 font-medium">
+                      <tr>
+                        <th className="px-4 py-2">Date</th>
+                        <th className="px-4 py-2">Amount</th>
+                        <th className="px-4 py-2">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-stone-100">
+                      <tr>
+                        <td className="px-4 py-2 text-stone-900">Oct 01, 2023</td>
+                        <td className="px-4 py-2 text-stone-600">$3.00</td>
+                        <td className="px-4 py-2 text-green-600 font-medium">Paid</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-2 text-stone-900">Sep 01, 2023</td>
+                        <td className="px-4 py-2 text-stone-600">$3.00</td>
+                        <td className="px-4 py-2 text-green-600 font-medium">Paid</td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-2 text-stone-900">Aug 01, 2023</td>
+                        <td className="px-4 py-2 text-stone-600">$3.00</td>
+                        <td className="px-4 py-2 text-green-600 font-medium">Paid</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="pt-4 border-t border-stone-100 flex justify-end gap-3">
+                {subStatus === 'Active' ? (
+                  <button 
+                    onClick={handleCancelSubscription}
+                    className="px-4 py-2 text-red-600 hover:bg-red-50 rounded text-sm font-medium transition-colors"
+                  >
+                    Cancel Subscription
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => setSubStatus('Active')}
+                    className="px-4 py-2 text-green-600 hover:bg-green-50 rounded text-sm font-medium transition-colors"
+                  >
+                    Reactivate Subscription
+                  </button>
+                )}
+                <button className="px-4 py-2 bg-stone-900 text-white rounded text-sm font-medium hover:bg-stone-700">
+                  Update Card
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto px-4">
         
         {/* Header & Profile Summary */}
@@ -184,10 +295,29 @@ const MembersArea: React.FC = () => {
                           {profile.location} • Member since {profile.joinDate}
                         </p>
                       </div>
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-stone-900 text-stone-50 shadow-sm">
-                        <span className="w-1.5 h-1.5 rounded-full bg-brand-gold mr-2 animate-pulse"></span>
-                        Active Member
-                      </span>
+                      <div className="flex flex-col items-end gap-3">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-stone-900 text-stone-50 shadow-sm">
+                          <span className="w-1.5 h-1.5 rounded-full bg-brand-gold mr-2 animate-pulse"></span>
+                          Active Member
+                        </span>
+                        <div className="flex items-center gap-4">
+                          <button 
+                            onClick={() => setShowSubscriptionModal(true)}
+                            className="text-xs font-medium text-stone-500 hover:text-stone-900 underline transition-colors"
+                          >
+                            Manage Subscription
+                          </button>
+                          <button 
+                            onClick={() => setShowShareModal(true)}
+                            className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-stone-400 hover:text-stone-900 transition-colors"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
+                              <path fillRule="evenodd" d="M15.75 4.5a3 3 0 11.825 2.066l-8.421 4.679a3.002 3.002 0 010 1.51l8.421 4.679a3 3 0 11-.729 1.31l-8.421-4.678a3 3 0 110-4.132l8.421-4.679a3 3 0 01-.096-.755z" clipRule="evenodd" />
+                            </svg>
+                            Share Profile
+                          </button>
+                        </div>
+                      </div>
                    </div>
                    <p className="text-stone-700 leading-relaxed max-w-2xl font-serif text-lg">
                      {profile.bio}
@@ -359,13 +489,9 @@ const MembersArea: React.FC = () => {
                           }`}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
-                            <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm0 8.621c1.092 0 2.106.273 2.995.756l1.313-2.163a.75.75 0 10-1.286-.78l-1.071 1.764a7.468 7.468 0 00-3.902 0L9.078 8.682a.75.75 0 00-1.286.78l1.313 2.163A5.996 5.996 0 0112 10.871z" clipRule="evenodd" />
-                            <path fillRule="evenodd" d="M11.25 13.5a.75.75 0 011.5 0v2.25H15a.75.75 0 010 1.5h-3.75a.75.75 0 01-.75-.75V13.5z" clipRule="evenodd" />
+                            <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm0 8.621c1.092 0 2.106.273 2.995.756l1.313-2.163a.75.75 0 10-1.286-.78l-1.071 1.764a7.468 7.468 0 00-3.902 0L9.009 10.5h-.008c-.736 0-1.27.636-1.118 1.354a3.66 3.66 0 003.356 2.887 3.66 3.66 0 003.356-2.887.975.975 0 00-.118-.554l-.071-.111c-1.353-2.126-2.202-4.576-2.408-7.14h.002z" clipRule="evenodd" />
                           </svg>
-                          {req.hasPrayed ? 'Prayed' : 'Pray'} 
-                          <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${req.hasPrayed ? 'bg-stone-700 text-stone-200' : 'bg-stone-100 text-stone-500'}`}>
-                            {req.count}
-                          </span>
+                          {req.hasPrayed ? 'Prayed' : 'Pray'} <span className="opacity-60">({req.count})</span>
                         </button>
                       </div>
                     </div>
@@ -373,75 +499,46 @@ const MembersArea: React.FC = () => {
                 ))}
               </div>
             </div>
+            
           </div>
 
-          {/* SIDEBAR COLUMN */}
+          {/* RIGHT COLUMN - SIDEBAR */}
           <div className="space-y-8">
-             
-             {/* News & Updates */}
-             <div className="bg-stone-900 text-white p-6 rounded-xl relative overflow-hidden">
-               <span className="relative z-10 inline-block px-2 py-1 rounded bg-stone-700 text-stone-200 text-[10px] font-bold uppercase tracking-wider mb-4">
-                 News Blasts
-               </span>
-               <h4 className="relative z-10 font-serif text-2xl mb-4">Congregation Updates</h4>
-               
-               <div className="relative z-10 space-y-4">
-                 <div className="border-l-2 border-brand-gold pl-4 py-1">
-                   <p className="text-xs text-stone-400 mb-1">Oct 12, 2023</p>
-                   <p className="text-sm text-stone-200 leading-snug">
-                     New audio series on "The Theology of Work" drops next Monday. Prepare your hearts.
-                   </p>
-                 </div>
-                 <div className="border-l-2 border-stone-700 pl-4 py-1">
-                   <p className="text-xs text-stone-400 mb-1">Oct 08, 2023</p>
-                   <p className="text-sm text-stone-300 leading-snug">
-                     Welcome to the 50 new brothers who joined from the Substack this week. Iron sharpens iron.
-                   </p>
-                 </div>
-                  <div className="border-l-2 border-stone-700 pl-4 py-1">
-                   <p className="text-xs text-stone-400 mb-1">Oct 01, 2023</p>
-                   <p className="text-sm text-stone-300 leading-snug">
-                     Reminder: The 40-Day Protocol resets on the 1st of next month. Finish strong.
-                   </p>
-                 </div>
-               </div>
-             </div>
-
-             {/* Quick Links */}
-             <div className="bg-white p-6 rounded-xl border border-stone-200">
-               <h4 className="font-serif text-lg mb-4 text-stone-900">Account & Support</h4>
-               <ul className="space-y-2">
-                 <li>
-                   <button 
-                    onClick={() => setIsEditingProfile(true)}
-                    className="w-full text-left px-3 py-2 rounded hover:bg-stone-50 text-sm text-stone-600 transition-colors flex items-center justify-between group"
-                   >
-                     <span>Update Profile</span>
-                     <span className="text-stone-300 group-hover:text-stone-500">→</span>
-                   </button>
-                 </li>
-                 <li>
-                   <a 
-                     href="https://billing.stripe.com/p/login/test"
-                     target="_blank" 
-                     rel="noreferrer"
-                     className="w-full text-left px-3 py-2 rounded hover:bg-stone-50 text-sm text-stone-600 transition-colors flex items-center justify-between group"
-                   >
-                     <span>Manage Subscription ($3/mo)</span>
-                     <span className="text-stone-300 group-hover:text-stone-500">→</span>
-                   </a>
-                 </li>
-                 <li>
-                   <a 
-                     href="mailto:sam@thebiblicalmantruth.com"
-                     className="w-full text-left px-3 py-2 rounded hover:bg-stone-50 text-sm text-stone-600 transition-colors flex items-center justify-between group"
-                   >
-                     <span>Contact Support (Sam AI)</span>
-                     <span className="text-stone-300 group-hover:text-stone-500">→</span>
-                   </a>
-                 </li>
+            
+            {/* Quick Links */}
+            <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+               <h4 className="text-xs font-bold uppercase text-stone-500 tracking-wider mb-4">Quick Links</h4>
+               <ul className="space-y-3 text-sm font-medium">
+                 <li><button className="text-stone-700 hover:text-stone-900 flex items-center gap-2"><span className="w-1.5 h-1.5 bg-stone-300 rounded-full"></span>Community Guidelines</button></li>
+                 <li><button className="text-stone-700 hover:text-stone-900 flex items-center gap-2"><span className="w-1.5 h-1.5 bg-stone-300 rounded-full"></span>Upcoming Events</button></li>
+                 <li><button className="text-stone-700 hover:text-stone-900 flex items-center gap-2"><span className="w-1.5 h-1.5 bg-stone-300 rounded-full"></span>Member Directory</button></li>
+                 <li><button onClick={() => setShowSubscriptionModal(true)} className="text-stone-700 hover:text-stone-900 flex items-center gap-2"><span className="w-1.5 h-1.5 bg-brand-gold rounded-full"></span>Manage Subscription</button></li>
                </ul>
-             </div>
+            </div>
+
+            {/* Book of the Month */}
+            <div className="bg-stone-100 rounded-xl p-6 text-center border border-stone-200">
+               <span className="text-xs font-bold uppercase text-stone-400 tracking-widest mb-3 block">Reading List</span>
+               <div className="w-24 h-36 bg-stone-300 mx-auto mb-4 shadow-md rotate-1 hover:rotate-0 transition-transform duration-300">
+                 {/* Placeholder for book cover */}
+                 <div className="w-full h-full flex items-center justify-center text-stone-500 text-xs text-center p-2 font-serif">Wild at Heart Cover</div>
+               </div>
+               <h5 className="font-serif font-bold text-stone-900">Wild at Heart</h5>
+               <p className="text-xs text-stone-500 mb-4">John Eldredge</p>
+               <button className="text-xs font-bold uppercase border-b border-stone-900 pb-0.5 hover:text-stone-600 hover:border-stone-600 transition-colors">
+                 Join Discussion
+               </button>
+            </div>
+            
+             {/* Quote Card */}
+             <div className="bg-stone-900 rounded-xl p-8 text-center shadow-lg relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-full h-1 bg-brand-gold"></div>
+               <p className="text-white font-serif italic text-lg leading-relaxed mb-4 relative z-10">
+                 "The world asks, 'What does a man own?' Christ asks, 'How does he use it?'"
+               </p>
+               <span className="text-xs font-bold uppercase text-stone-500 tracking-widest">Andrew Murray</span>
+            </div>
+
           </div>
         </div>
       </div>
