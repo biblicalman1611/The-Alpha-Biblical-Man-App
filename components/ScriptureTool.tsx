@@ -40,11 +40,12 @@ const ScriptureTool: React.FC = () => {
   const [history, setHistory] = useState<string[]>([]);
 
   // Audio State
-  const [isAudioLoading, setIsAudioLoading] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [playingAudio, setPlayingAudio] = useState<'verse' | 'lesson' | null>(null);
+  const [loadingAudio, setLoadingAudio] = useState<'verse' | 'lesson' | null>(null);
+
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceRef = useRef<AudioBufferSourceNode | null>(null);
-  
+
   // Copy State
   const [copiedLesson, setCopiedLesson] = useState(false);
 
@@ -62,7 +63,7 @@ const ScriptureTool: React.FC = () => {
       sourceRef.current.stop();
       sourceRef.current = null;
     }
-    setIsPlaying(false);
+    setPlayingAudio(null);
     setCopiedLesson(false);
   }, [result]);
 
@@ -113,24 +114,31 @@ const ScriptureTool: React.FC = () => {
     }
   };
 
-  const toggleAudio = async () => {
-    if (!result?.verse) return;
+  const handleAudioToggle = async (type: 'verse' | 'lesson', text: string) => {
+    if (!text) return;
 
-    // Stop if currently playing
-    if (isPlaying) {
+    // Stop if currently playing this same type
+    if (playingAudio === type) {
       if (sourceRef.current) {
         sourceRef.current.stop();
         sourceRef.current = null;
       }
-      setIsPlaying(false);
+      setPlayingAudio(null);
       return;
     }
 
-    setIsAudioLoading(true);
+    // Stop any other currently playing audio
+    if (sourceRef.current) {
+      sourceRef.current.stop();
+      sourceRef.current = null;
+    }
+    setPlayingAudio(null);
+
+    setLoadingAudio(type);
 
     try {
       // Generate Audio
-      const base64Audio = await generateScriptureAudio(result.verse);
+      const base64Audio = await generateScriptureAudio(text);
       if (!base64Audio) throw new Error("Failed to generate audio");
 
       // Initialize Audio Context
@@ -151,16 +159,15 @@ const ScriptureTool: React.FC = () => {
       const source = audioContextRef.current.createBufferSource();
       source.buffer = buffer;
       source.connect(audioContextRef.current.destination);
-      source.onended = () => setIsPlaying(false);
+      source.onended = () => setPlayingAudio(null);
 
       sourceRef.current = source;
       source.start();
-      setIsPlaying(true);
+      setPlayingAudio(type);
     } catch (err) {
       console.error(err);
-      // Optional: show audio error toast or log
     } finally {
-      setIsAudioLoading(false);
+      setLoadingAudio(null);
     }
   };
 
@@ -246,16 +253,16 @@ const ScriptureTool: React.FC = () => {
                 <p className="text-sm font-bold text-stone-900 tracking-wide font-sans">
                   — {result.reference}
                 </p>
-                <button 
-                  onClick={toggleAudio}
-                  disabled={isAudioLoading}
+                <button
+                  onClick={() => handleAudioToggle('verse', result.verse)}
+                  disabled={loadingAudio === 'verse'}
                   className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all shadow-sm hover:shadow-md ${
-                    isPlaying 
-                      ? 'bg-stone-900 text-white border border-stone-900' 
+                    playingAudio === 'verse'
+                      ? 'bg-stone-900 text-white border border-stone-900'
                       : 'bg-white text-stone-900 border border-stone-200 hover:border-stone-900'
                   }`}
                 >
-                  {isAudioLoading ? (
+                  {loadingAudio === 'verse' ? (
                     <span className="flex items-center gap-2">
                        <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -263,7 +270,7 @@ const ScriptureTool: React.FC = () => {
                        </svg>
                        Generating...
                     </span>
-                  ) : isPlaying ? (
+                  ) : playingAudio === 'verse' ? (
                     <>
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                          <path fillRule="evenodd" d="M6.75 5.25a.75.75 0 01.75-.75H9a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H7.5a.75.75 0 01-.75-.75V5.25zm7.5 0A.75.75 0 0115 4.5h1.5a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H15a.75.75 0 01-.75-.75V5.25z" clipRule="evenodd" />
@@ -276,7 +283,7 @@ const ScriptureTool: React.FC = () => {
                         <path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318.664-2.66 1.905A9.76 9.76 0 001.5 12c0 .898.121 1.768.35 2.595.341 1.24 1.518 1.905 2.659 1.905h1.93l4.5 4.5c.945.945 2.561.276 2.561-1.06V4.06zM18.584 5.106a.75.75 0 011.06 0c3.808 3.807 3.808 9.98 0 13.788a.75.75 0 11-1.06-1.06 8.25 8.25 0 000-11.668.75.75 0 010-1.06z" />
                         <path d="M15.932 7.757a.75.75 0 011.061 0 6 6 0 010 8.486.75.75 0 01-1.06-1.061 4.5 4.5 0 000-6.364.75.75 0 010-1.06z" />
                       </svg>
-                      <span>Play Audio</span> 
+                      <span>Play Audio</span>
                     </>
                   )}
                 </button>
@@ -290,7 +297,32 @@ const ScriptureTool: React.FC = () => {
                   <span className="w-2 h-2 rounded-full bg-brand-gold"></span>
                   Micro Lesson
                 </span>
-                <button 
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleAudioToggle('lesson', result.microLesson)}
+                    disabled={!!loadingAudio}
+                    className="text-stone-400 hover:text-stone-900 transition-colors p-1"
+                    title={playingAudio === 'lesson' ? "Stop Audio" : "Play Audio"}
+                  >
+                    {loadingAudio === 'lesson' ? (
+                       <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                       </svg>
+                    ) : playingAudio === 'lesson' ? (
+                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-stone-900">
+                          <path fillRule="evenodd" d="M6.75 5.25a.75.75 0 01.75-.75H9a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H7.5a.75.75 0 01-.75-.75V5.25zm7.5 0A.75.75 0 0115 4.5h1.5a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H15a.75.75 0 01-.75-.75V5.25z" clipRule="evenodd" />
+                       </svg>
+                    ) : (
+                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                        <path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318.664-2.66 1.905A9.76 9.76 0 001.5 12c0 .898.121 1.768.35 2.595.341 1.24 1.518 1.905 2.659 1.905h1.93l4.5 4.5c.945.945 2.561.276 2.561-1.06V4.06zM18.584 5.106a.75.75 0 011.06 0c3.808 3.807 3.808 9.98 0 13.788a.75.75 0 11-1.06-1.06 8.25 8.25 0 000-11.668.75.75 0 010-1.06z" />
+                        <path d="M15.932 7.757a.75.75 0 011.061 0 6 6 0 010 8.486.75.75 0 01-1.06-1.061 4.5 4.5 0 000-6.364.75.75 0 010-1.06z" />
+                      </svg>
+                    )}
+                  </button>
+
+                  <button
                    onClick={handleCopyLesson}
                    className="text-stone-400 hover:text-stone-900 transition-colors"
                    title="Copy to clipboard"
@@ -303,6 +335,7 @@ const ScriptureTool: React.FC = () => {
                      </svg>
                    )}
                  </button>
+                </div>
               </div>
               <p className="text-xl text-stone-700 leading-relaxed font-serif flex-grow font-light">
                 {result.microLesson}
