@@ -11,10 +11,10 @@ interface LayoutProps {
   onLogout: () => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ 
-  children, 
-  activeSection, 
-  onNavigate, 
+const Layout: React.FC<LayoutProps> = ({
+  children,
+  activeSection,
+  onNavigate,
   isLoggedIn,
   onLoginClick,
   onLogout
@@ -42,15 +42,15 @@ const Layout: React.FC<LayoutProps> = ({
 
   return (
     <div className="min-h-screen flex flex-col font-sans text-stone-900">
-      <header 
+      <header
         className={`fixed top-0 w-full z-40 transition-all duration-500 border-b ${
           scrolled || mobileMenuOpen
-            ? 'bg-white/95 backdrop-blur-md shadow-sm py-4 border-stone-200/50' 
+            ? 'bg-white/95 backdrop-blur-md shadow-sm py-4 border-stone-200/50'
             : 'bg-transparent py-6 border-transparent'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center relative">
-          <div 
+          <div
             className="text-xl md:text-2xl font-serif font-bold tracking-tight cursor-pointer uppercase select-none z-50 relative"
             onClick={() => onNavigate(NavSection.HOME)}
           >
@@ -70,11 +70,11 @@ const Layout: React.FC<LayoutProps> = ({
                 {item.label}
               </button>
             ))}
-            
+
             {/* Auth Section */}
             {isLoggedIn ? (
                <div className="flex items-center gap-6 border-l border-stone-300 pl-6">
-                 <button 
+                 <button
                    onClick={() => onNavigate(NavSection.MEMBERS)}
                    className={`group flex items-center gap-2 text-sm font-medium tracking-wide uppercase transition-colors ${
                      activeSection === NavSection.MEMBERS ? 'text-stone-900' : 'text-stone-500 hover:text-stone-900'
@@ -93,7 +93,7 @@ const Layout: React.FC<LayoutProps> = ({
                </div>
             ) : (
               <div className="border-l border-stone-300 pl-6">
-                <button 
+                <button
                   onClick={onLoginClick}
                   className="flex items-center gap-2 text-sm font-bold tracking-wide uppercase text-stone-900 hover:text-stone-600 transition-colors"
                 >
@@ -107,7 +107,7 @@ const Layout: React.FC<LayoutProps> = ({
           </nav>
 
           {/* Mobile Menu Toggle */}
-          <button 
+          <button
             className="md:hidden p-2 z-50 relative"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
@@ -174,8 +174,8 @@ const Layout: React.FC<LayoutProps> = ({
       {/* Global Radio Player */}
       <RadioPlayer />
 
-      <footer className="bg-stone-900 text-stone-400 py-16">
-        <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
+      <footer className="bg-stone-900 text-stone-400 py-12 lg:py-16">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-12">
           <div className="col-span-1 md:col-span-2">
             <h4 className="text-white font-serif text-3xl mb-6 uppercase tracking-tight">The Biblical Man</h4>
             <p className="max-w-xs text-base leading-relaxed text-stone-500">
@@ -200,7 +200,7 @@ const Layout: React.FC<LayoutProps> = ({
             </ul>
           </div>
         </div>
-        <div className="max-w-6xl mx-auto px-6 mt-16 pt-8 border-t border-stone-800 text-xs text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4 text-stone-600">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 mt-12 pt-8 border-t border-stone-800 text-xs lg:text-sm text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4 text-stone-600">
           <span>&copy; {new Date().getFullYear()} The Biblical Man. All rights reserved.</span>
           <span>www.thebiblicalmantruth.com</span>
         </div>

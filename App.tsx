@@ -132,19 +132,19 @@ const App: React.FC = () => {
             <ProductSection products={PRODUCTS} />
           </div>
           
-          <div className="bg-stone-900 py-20 px-4 text-center">
-             <div className="max-w-2xl mx-auto space-y-6">
-               <h2 className="text-3xl font-serif text-white">Join the Congregation</h2>
-               <p className="text-stone-400">
+          <div className="bg-stone-900 py-20 lg:py-28 px-4 lg:px-8 text-center">
+             <div className="max-w-3xl mx-auto space-y-6 lg:space-y-8">
+               <h2 className="text-3xl lg:text-4xl font-serif text-white">Join the Congregation</h2>
+               <p className="text-stone-400 text-base lg:text-lg max-w-2xl mx-auto leading-relaxed">
                  Weekly reflections delivered to your inbox every Sunday morning. No noise, just substance.
                </p>
-               <form className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
-                 <input 
-                   type="email" 
-                   placeholder="your@email.com" 
-                   className="px-4 py-3 rounded-md bg-stone-800 border border-stone-700 text-white placeholder-stone-500 focus:outline-none focus:border-stone-500 w-full"
+               <form className="flex flex-col sm:flex-row gap-4 lg:gap-6 justify-center max-w-xl mx-auto" onSubmit={(e) => e.preventDefault()}>
+                 <input
+                   type="email"
+                   placeholder="your@email.com"
+                   className="px-4 lg:px-6 py-3 lg:py-4 text-base lg:text-lg rounded-md bg-stone-800 border border-stone-700 text-white placeholder-stone-500 focus:outline-none focus:border-stone-500 w-full"
                  />
-                 <button className="px-6 py-3 bg-white text-stone-900 font-medium rounded-md hover:bg-stone-200 transition-colors">
+                 <button className="px-6 lg:px-8 py-3 lg:py-4 bg-white text-stone-900 font-medium text-base lg:text-lg rounded-md hover:bg-stone-200 transition-colors whitespace-nowrap">
                    Subscribe
                  </button>
                </form>

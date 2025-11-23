@@ -165,15 +165,15 @@ const ScriptureTool: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 py-16">
-      <div className="text-center mb-12">
-        <h2 className="text-3xl md:text-4xl font-serif text-stone-800 mb-4">Micro Scripture Learning</h2>
-        <p className="text-stone-600 max-w-lg mx-auto">
+    <div className="w-full max-w-7xl mx-auto px-4 lg:px-8 py-16 lg:py-24">
+      <div className="text-center mb-12 lg:mb-16">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-stone-800 mb-4 lg:mb-6">Micro Scripture Learning</h2>
+        <p className="text-stone-600 text-base lg:text-lg max-w-2xl mx-auto leading-relaxed">
           Enter a feeling, a topic, or a question. Receive a micro-dose of ancient KJV wisdom tailored to your moment.
         </p>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-xl border border-stone-100 p-8 md:p-12 relative overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-xl border border-stone-100 p-8 md:p-12 lg:p-16 relative overflow-hidden">
         {/* Input Section */}
         <form onSubmit={handleSearch} className="relative z-10 max-w-2xl mx-auto">
           <div className="flex flex-col md:flex-row gap-4">
@@ -226,14 +226,14 @@ const ScriptureTool: React.FC = () => {
         )}
 
         {result && (
-          <div className="mt-12 fade-in grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="mt-12 lg:mt-16 fade-in grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
             {/* Card 1: The Verse - Wide Card */}
-            <div className="md:col-span-2 bg-stone-50 p-8 md:p-10 rounded-2xl border border-stone-200 shadow-sm relative">
+            <div className="md:col-span-2 bg-stone-50 p-8 md:p-10 lg:p-14 rounded-2xl border border-stone-200 shadow-sm relative">
               <div className="flex justify-between items-center mb-6">
                  <span className="text-xs font-bold tracking-widest text-stone-400 uppercase">Scripture (KJV)</span>
               </div>
               
-              <p className="text-3xl md:text-4xl font-serif text-stone-800 mb-8 leading-relaxed tracking-wide text-center px-4 md:px-12 italic">
+              <p className="text-3xl md:text-4xl lg:text-5xl font-serif text-stone-800 mb-8 lg:mb-10 leading-relaxed tracking-wide text-center px-4 md:px-12 lg:px-20 italic">
                 "{result.verse}"
               </p>
               
