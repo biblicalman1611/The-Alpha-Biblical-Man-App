@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type, Modality } from "@google/genai";
-import { ScriptureResponse, ArticleInsight } from '../types';
+import { ScriptureResponse, ArticleInsight, BusinessInsight } from '../types';
 
 const apiKey = process.env.API_KEY || '';
 // Initialize conditionally to prevent crashes if key is missing during dev, 
@@ -121,6 +121,50 @@ export const generateArticleInsight = async (content: string): Promise<ArticleIn
     return JSON.parse(text) as ArticleInsight;
   } catch (error) {
     console.error("Error generating article insight:", error);
+    return null;
+  }
+};
+
+export const generateAnalyticsInsight = async (dataContext: string): Promise<BusinessInsight | null> => {
+  if (!ai) return null;
+
+  const prompt = `
+    You are a Data Scientist and Business Strategist for "The Biblical Man", a subscription platform.
+    Analyze the following raw data JSON snapshot representing current user engagement:
+    
+    ${dataContext}
+
+    Provide a strategic report in JSON format:
+    1. summary: A 2-sentence executive summary of the health of the platform.
+    2. keyObservation: One specific trend that stands out (e.g., high churn, high scripture tool usage).
+    3. strategicAction: One concrete recommendation to improve metrics.
+    4. churnRiskAssessment: A brief assessment of user retention risk (Low/Medium/High) and why.
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            summary: { type: Type.STRING },
+            keyObservation: { type: Type.STRING },
+            strategicAction: { type: Type.STRING },
+            churnRiskAssessment: { type: Type.STRING },
+          },
+          required: ["summary", "keyObservation", "strategicAction", "churnRiskAssessment"],
+        },
+      },
+    });
+
+    const text = response.text;
+    if (!text) return null;
+    return JSON.parse(text) as BusinessInsight;
+  } catch (error) {
+    console.error("Error generating analytics insight:", error);
     return null;
   }
 };

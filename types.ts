@@ -56,4 +56,19 @@ export enum NavSection {
   TOOL = 'tool',
   PRODUCTS = 'products',
   MEMBERS = 'members',
+  ADMIN = 'admin',
+}
+
+export interface AnalyticsMetric {
+  label: string;
+  value: string;
+  change: number; // percentage
+  trend: 'up' | 'down' | 'neutral';
+}
+
+export interface BusinessInsight {
+  summary: string;
+  keyObservation: string;
+  strategicAction: string;
+  churnRiskAssessment: string;
 }
