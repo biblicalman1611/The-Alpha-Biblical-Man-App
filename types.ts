@@ -1,0 +1,42 @@
+export interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  date: string;
+  readTime: string;
+  category: string;
+  link: string; // Link to substack post
+  content: string; // Full content for the in-app reader
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: string;
+  imageUrl: string;
+  cta: string;
+  link: string; // Link to gumroad product
+}
+
+export interface ScriptureResponse {
+  verse: string;
+  reference: string;
+  microLesson: string;
+  reflectionQuestion: string;
+  context?: string;
+}
+
+export interface ArticleInsight {
+  corePrinciple: string;
+  actionItem: string;
+  reflection: string;
+}
+
+export enum NavSection {
+  HOME = 'home',
+  WRITINGS = 'writings',
+  TOOL = 'tool',
+  PRODUCTS = 'products',
+  MEMBERS = 'members',
+}
