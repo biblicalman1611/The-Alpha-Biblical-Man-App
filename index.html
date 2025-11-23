@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>The Biblical Man | Faith & Letters</title>
+    <title>The Biblical Man | Truth & Tradition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -48,6 +48,75 @@
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* Dynamic Article Reader Styles */
+      .article-content {
+        color: #292524;
+      }
+      .article-content p {
+        margin-bottom: 1.5rem;
+        line-height: 1.8;
+        font-family: 'Crimson Pro', serif;
+        font-size: 1.125rem;
+      }
+      .article-content h1, .article-content h2, .article-content h3, .article-content h4 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        margin-top: 2.5rem;
+        margin-bottom: 1rem;
+        color: #1c1917;
+      }
+      .article-content h2 { font-size: 1.5rem; }
+      .article-content h3 { font-size: 1.25rem; }
+      
+      .article-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 2rem 0;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      }
+      .article-content figure {
+        margin: 2rem 0;
+      }
+      .article-content figcaption {
+        text-align: center;
+        font-size: 0.875rem;
+        color: #78716c;
+        margin-top: 0.5rem;
+      }
+      .article-content a {
+        color: #d4af37;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+      .article-content blockquote {
+        border-left: 4px solid #d4af37;
+        padding-left: 1.5rem;
+        font-style: italic;
+        color: #57534e;
+        margin: 2rem 0;
+        font-family: 'Crimson Pro', serif;
+        font-size: 1.25rem;
+      }
+      .article-content ul, .article-content ol {
+        margin-bottom: 1.5rem;
+        padding-left: 1.5rem;
+        list-style-type: disc;
+      }
+      .article-content li {
+        margin-bottom: 0.5rem;
+        font-family: 'Crimson Pro', serif;
+        font-size: 1.125rem;
+      }
+      .article-content hr {
+        border-color: #e7e5e4;
+        margin: 3rem 0;
+      }
+      /* Hide Substack specific subscribe buttons that might appear in feed */
+      .article-content .subscribe-widget {
+        display: none;
       }
     </style>
   <script type="importmap">

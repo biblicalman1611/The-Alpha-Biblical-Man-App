@@ -93,7 +93,7 @@ const ArticleReader: React.FC<ArticleReaderProps> = ({ post, onClose }) => {
           </h1>
 
           <div 
-            className="prose prose-lg prose-stone prose-headings:font-serif prose-headings:font-normal prose-p:leading-relaxed"
+            className="article-content"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
 

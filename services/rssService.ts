@@ -1,80 +1,82 @@
 import { BlogPost } from '../types';
 
-const RSS_URL = 'https://thebiblicalman.substack.com/feed';
+const FEED_URL = 'https://biblicalman.substack.com/feed';
+const RSS_API_URL = 'https://api.rss2json.com/v1/api.json';
 
 export const fetchLatestPosts = async (): Promise<BlogPost[]> => {
   try {
-    // Append a timestamp to the RSS URL to force the proxy to fetch fresh data
-    const cacheBuster = `?t=${new Date().getTime()}`;
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(RSS_URL + cacheBuster)}`;
+    // Use rss2json to handle CORS and XML parsing reliably
+    const response = await fetch(`${RSS_API_URL}?rss_url=${encodeURIComponent(FEED_URL)}`);
+    
+    if (!response.ok) {
+       throw new Error(`Failed to fetch RSS: ${response.status} ${response.statusText}`);
+    }
 
-    const response = await fetch(proxyUrl);
     const data = await response.json();
-    
-    if (!data.contents) return [];
 
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(data.contents, "text/xml");
-    const items = xmlDoc.querySelectorAll("item");
-    
+    if (data.status !== 'ok') {
+      // Fallback or empty if the API fails
+      console.warn("RSS API returned status:", data.status);
+      return [];
+    }
+
+    const items = data.items || [];
     const posts: BlogPost[] = [];
-    
-    // Process top 3 items
-    for (let i = 0; i < Math.min(items.length, 3); i++) {
+
+    // Limit to first 3 items
+    const limit = Math.min(items.length, 3);
+
+    for (let i = 0; i < limit; i++) {
       const item = items[i];
-      let title = item.querySelector("title")?.textContent || "Untitled";
-      // Clean up potential CDATA artifacts if DOMParser missed them
-      title = title.replace("<![CDATA[", "").replace("]]>", "").trim();
+      
+      const title = item.title || "Untitled";
+      const link = item.link || "";
+      const content = item.content || item.description || "";
+      const description = item.description || "";
 
-      const link = item.querySelector("link")?.textContent || "";
-      const pubDate = item.querySelector("pubDate")?.textContent || "";
-      
-      // Substack puts full HTML content in content:encoded
-      // We look for the 'encoded' tag in any namespace
-      const contentEncoded = item.getElementsByTagNameNS("*", "encoded")[0]?.textContent;
-      const description = item.querySelector("description")?.textContent || "";
-      
-      // Fallback to description if encoded content is missing
-      const fullContent = contentEncoded || description;
-      
-      // Create plain text for excerpt by stripping HTML
+      // Create excerpt (strip HTML)
       const tempDiv = document.createElement("div");
-      // Use description for excerpt as it's cleaner in RSS usually
-      tempDiv.innerHTML = description; 
-      const plainText = tempDiv.textContent || "";
-      const excerpt = plainText.substring(0, 150) + "...";
-      
-      // Calculate read time based on word count of full content
-      const fullTextDiv = document.createElement("div");
-      fullTextDiv.innerHTML = fullContent;
-      const fullText = fullTextDiv.textContent || "";
-      const wordCount = fullText.split(/\s+/).length;
-      const readTime = Math.max(1, Math.ceil(wordCount / 200)) + " min read";
+      tempDiv.innerHTML = description;
+      const textContent = tempDiv.textContent || "";
+      const excerpt = textContent.length > 140 
+        ? textContent.substring(0, 140).trim() + "..." 
+        : textContent;
 
-      // Format date
-      const dateObj = new Date(pubDate);
-      const dateStr = isNaN(dateObj.getTime()) 
+      // Calculate read time
+      const wordCount = textContent.split(/\s+/).length;
+      const readTime = Math.max(1, Math.ceil(wordCount / 225)) + " min read";
+
+      // Format Date
+      // rss2json returns standard date string "YYYY-MM-DD HH:mm:ss"
+      // We accept it or convert to Date object
+      const pubDate = new Date(item.pubDate.replace(/-/g, '/')); // simple fix for safari compatibility sometimes
+      const formattedDate = isNaN(pubDate.getTime()) 
         ? "Recent" 
-        : dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        : pubDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-      // Get category if available
-      const category = item.querySelector("category")?.textContent || "Essay";
+      // Clean category
+      let category = "Writing";
+      if (item.categories && item.categories.length > 0) {
+        const rawCat = item.categories[0];
+        category = rawCat.charAt(0).toUpperCase() + rawCat.slice(1);
+      }
 
       posts.push({
-        id: link, // Use URL as ID
+        id: item.guid || link,
         title,
         excerpt,
-        date: dateStr,
+        date: formattedDate,
         readTime,
         category,
         link,
-        content: fullContent
+        content: content
       });
     }
 
     return posts;
+
   } catch (error) {
-    console.error("Failed to fetch RSS feed", error);
+    console.error("Error fetching/parsing RSS feed:", error);
     return [];
   }
 };

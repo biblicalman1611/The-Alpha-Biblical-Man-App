@@ -6,6 +6,7 @@ import TutorialSection from './components/TutorialSection';
 import WritingsSection from './components/WritingsSection';
 import ProductSection from './components/ProductSection';
 import MembersArea from './components/MembersArea';
+import AboutSection from './components/AboutSection';
 import LoginModal from './components/LoginModal';
 import ArticleReader from './components/ArticleReader';
 import { NavSection, BlogPost } from './types';
@@ -25,6 +26,7 @@ const App: React.FC = () => {
 
   // Refs for scrolling
   const heroRef = useRef<HTMLDivElement>(null);
+  const missionRef = useRef<HTMLDivElement>(null);
   const toolRef = useRef<HTMLDivElement>(null);
   const writingsRef = useRef<HTMLDivElement>(null);
   const productsRef = useRef<HTMLDivElement>(null);
@@ -51,7 +53,8 @@ const App: React.FC = () => {
     }
 
     let ref = heroRef;
-    if (section === NavSection.TOOL) ref = toolRef;
+    if (section === NavSection.MISSION) ref = missionRef;
+    else if (section === NavSection.TOOL) ref = toolRef;
     else if (section === NavSection.WRITINGS) ref = writingsRef;
     else if (section === NavSection.PRODUCTS) ref = productsRef;
     else if (section === NavSection.MEMBERS) ref = membersRef;
@@ -106,6 +109,10 @@ const App: React.FC = () => {
         <>
           <div ref={heroRef}>
             <Hero onNavigate={scrollToSection} />
+          </div>
+
+          <div ref={missionRef}>
+            <AboutSection />
           </div>
 
           <div ref={toolRef} className="bg-white">

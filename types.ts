@@ -35,6 +35,7 @@ export interface ArticleInsight {
 
 export enum NavSection {
   HOME = 'home',
+  MISSION = 'mission',
   WRITINGS = 'writings',
   TOOL = 'tool',
   PRODUCTS = 'products',

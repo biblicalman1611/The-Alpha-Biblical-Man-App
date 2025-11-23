@@ -34,7 +34,7 @@ export const BLOG_POSTS: BlogPost[] = [
     date: "Latest",
     readTime: "6 min read",
     category: "Manhood",
-    link: "https://thebiblicalman.substack.com",
+    link: "https://biblicalman.substack.com",
     content: PLACEHOLDER_TEXT_1
   },
   {
@@ -44,7 +44,7 @@ export const BLOG_POSTS: BlogPost[] = [
     date: "Popular",
     readTime: "5 min read",
     category: "Leadership",
-    link: "https://thebiblicalman.substack.com",
+    link: "https://biblicalman.substack.com",
     content: PLACEHOLDER_TEXT_2
   },
   {
@@ -54,7 +54,7 @@ export const BLOG_POSTS: BlogPost[] = [
     date: "Essay",
     readTime: "4 min read",
     category: "Family",
-    link: "https://thebiblicalman.substack.com",
+    link: "https://biblicalman.substack.com",
     content: PLACEHOLDER_TEXT_3
   }
 ];

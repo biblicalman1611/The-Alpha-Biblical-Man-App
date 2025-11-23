@@ -20,11 +20,11 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/80 backdrop-blur-sm p-4 animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/80 backdrop-blur-sm p-4 fade-in">
       <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 relative">
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 text-stone-400 hover:text-stone-900"
+          className="absolute top-4 right-4 text-stone-400 hover:text-stone-900 transition-colors"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -44,7 +44,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin, onClose }) => {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 border border-stone-300 rounded focus:ring-2 focus:ring-stone-900 focus:border-stone-900 outline-none"
+              className="w-full p-3 border border-stone-300 rounded focus:ring-2 focus:ring-stone-900 focus:border-stone-900 outline-none transition-all"
               placeholder="you@example.com"
             />
           </div>

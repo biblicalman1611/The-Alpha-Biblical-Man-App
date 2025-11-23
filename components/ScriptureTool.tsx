@@ -211,67 +211,78 @@ const ScriptureTool: React.FC = () => {
         )}
 
         {result && (
-          <div className="mt-12 fade-in">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-              {/* Card 1: The Verse */}
-              <div className="bg-stone-50 p-8 rounded-xl border-l-4 border-stone-800 relative">
-                <div className="flex justify-between items-start mb-2">
-                   <span className="text-xs font-bold tracking-widest text-stone-400 uppercase block">Scripture (KJV)</span>
-                </div>
-                
-                <p className="text-xl md:text-2xl font-serif italic text-stone-800 mb-6 leading-relaxed">
-                  "{result.verse}"
+          <div className="mt-12 fade-in grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Card 1: The Verse - Wide Card */}
+            <div className="md:col-span-2 bg-stone-50 p-8 md:p-10 rounded-2xl border border-stone-200 shadow-sm relative">
+              <div className="flex justify-between items-center mb-6">
+                 <span className="text-xs font-bold tracking-widest text-stone-400 uppercase">Scripture (KJV)</span>
+              </div>
+              
+              <p className="text-3xl md:text-4xl font-serif text-stone-800 mb-8 leading-relaxed tracking-wide text-center px-4 md:px-12 italic">
+                "{result.verse}"
+              </p>
+              
+              <div className="flex flex-col sm:flex-row items-center justify-between pt-6 border-t border-stone-200/60 gap-4">
+                <p className="text-sm font-bold text-stone-900 tracking-wide font-sans">
+                  — {result.reference}
                 </p>
-                
-                <div className="flex items-center justify-between pt-4 border-t border-stone-200/50">
-                  <p className="text-sm font-semibold text-stone-600 font-sans">
-                    — {result.reference}
-                  </p>
-                  <button 
-                    onClick={toggleAudio}
-                    disabled={isAudioLoading}
-                    className={`flex items-center gap-2 text-sm font-medium transition-colors ${
-                      isPlaying ? 'text-stone-900' : 'text-stone-400 hover:text-stone-600'
-                    }`}
-                    title="Listen to Verse"
-                  >
-                    {isAudioLoading ? (
-                      <span className="animate-pulse">Loading Audio...</span>
-                    ) : isPlaying ? (
-                      <>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                          <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zM9 8.25a.75.75 0 00-.75.75v6c0 .414.336.75.75.75h.75a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75H9zm5.25 0a.75.75 0 00-.75.75v6c0 .414.336.75.75.75h.75a.75.75 0 00.75-.75V9a.75.75 0 00-.75-.75h-.75z" clipRule="evenodd" />
-                        </svg>
-                        <span>Stop</span>
-                      </>
-                    ) : (
-                      <>
-                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                          <path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318.664-2.66 1.905A9.76 9.76 0 001.5 12c0 .898.121 1.768.35 2.595.341 1.24 1.518 1.905 2.659 1.905h1.93l4.5 4.5c.945.945 2.561.276 2.561-1.06V4.06zM18.584 5.106a.75.75 0 011.06 0c3.808 3.807 3.808 9.98 0 13.788a.75.75 0 11-1.06-1.06 8.25 8.25 0 000-11.668.75.75 0 010-1.06z" />
-                          <path d="M15.932 7.757a.75.75 0 011.061 0 6 6 0 010 8.486.75.75 0 01-1.06-1.061 4.5 4.5 0 000-6.364.75.75 0 010-1.06z" />
-                        </svg>
-                        <span>Listen</span>
-                      </>
-                    )}
-                  </button>
-                </div>
+                <button 
+                  onClick={toggleAudio}
+                  disabled={isAudioLoading}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all shadow-sm hover:shadow-md ${
+                    isPlaying 
+                      ? 'bg-stone-900 text-white border border-stone-900' 
+                      : 'bg-white text-stone-900 border border-stone-200 hover:border-stone-900'
+                  }`}
+                >
+                  {isAudioLoading ? (
+                    <span className="flex items-center gap-2">
+                       <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                       </svg>
+                       Generating...
+                    </span>
+                  ) : isPlaying ? (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                         <path fillRule="evenodd" d="M6.75 5.25a.75.75 0 01.75-.75H9a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H7.5a.75.75 0 01-.75-.75V5.25zm7.5 0A.75.75 0 0115 4.5h1.5a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H15a.75.75 0 01-.75-.75V5.25z" clipRule="evenodd" />
+                      </svg>
+                      <span>Stop Audio</span>
+                    </>
+                  ) : (
+                    <>
+                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                        <path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318.664-2.66 1.905A9.76 9.76 0 001.5 12c0 .898.121 1.768.35 2.595.341 1.24 1.518 1.905 2.659 1.905h1.93l4.5 4.5c.945.945 2.561.276 2.561-1.06V4.06zM18.584 5.106a.75.75 0 011.06 0c3.808 3.807 3.808 9.98 0 13.788a.75.75 0 11-1.06-1.06 8.25 8.25 0 000-11.668.75.75 0 010-1.06z" />
+                        <path d="M15.932 7.757a.75.75 0 011.061 0 6 6 0 010 8.486.75.75 0 01-1.06-1.061 4.5 4.5 0 000-6.364.75.75 0 010-1.06z" />
+                      </svg>
+                      <span>Play Audio</span> 
+                    </>
+                  )}
+                </button>
               </div>
+            </div>
 
-              {/* Card 2: The Insight */}
-              <div className="space-y-6">
-                <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm">
-                  <span className="text-xs font-bold tracking-widest text-stone-400 uppercase mb-2 block">Micro Lesson</span>
-                  <p className="text-stone-700 leading-relaxed">
-                    {result.microLesson}
-                  </p>
-                </div>
-                <div className="bg-stone-900 p-6 rounded-xl shadow-lg text-stone-100">
-                  <span className="text-xs font-bold tracking-widest text-stone-400 uppercase mb-2 block">Reflection</span>
-                  <p className="text-lg font-serif">
-                    {result.reflectionQuestion}
-                  </p>
-                </div>
-              </div>
+            {/* Card 2: Micro Lesson - Light Card */}
+            <div className="bg-white p-8 rounded-2xl border border-stone-100 shadow-sm flex flex-col">
+              <span className="text-xs font-bold tracking-widest text-stone-400 uppercase mb-4 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-gold"></span>
+                Micro Lesson
+              </span>
+              <p className="text-lg text-stone-700 leading-relaxed font-serif flex-grow">
+                {result.microLesson}
+              </p>
+            </div>
+
+            {/* Card 3: Reflection - Dark Card */}
+            <div className="bg-stone-900 p-8 rounded-2xl border border-stone-800 shadow-xl flex flex-col">
+              <span className="text-xs font-bold tracking-widest text-stone-500 uppercase mb-4 flex items-center gap-2">
+                 <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+                 Reflection
+              </span>
+              <p className="text-xl font-serif text-stone-100 leading-relaxed flex-grow italic">
+                {result.reflectionQuestion}
+              </p>
             </div>
           </div>
         )}
