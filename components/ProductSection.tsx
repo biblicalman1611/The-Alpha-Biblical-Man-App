@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Product } from '../types';
 
@@ -11,14 +10,14 @@ const ProductSection: React.FC<ProductSectionProps> = ({ products }) => {
   const otherProducts = products.filter(p => !p.isFeatured);
 
   return (
-    <div className="py-24 lg:py-32 bg-stone-100 border-t border-stone-200">
-      <div className="max-w-7xl mx-auto px-4 lg:px-8">
-        <div className="text-center mb-16 lg:mb-20">
-          <span className="text-xs lg:text-sm font-bold tracking-[0.2em] text-brand-gold uppercase mb-2 lg:mb-3 block">
+    <div className="py-24 bg-stone-100 border-t border-stone-200">
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="text-center mb-16">
+          <span className="text-xs font-bold tracking-[0.2em] text-brand-gold uppercase mb-2 block">
             The Armory
           </span>
-          <h2 className="text-3xl md:text-5xl lg:text-6xl font-serif text-stone-900 mb-4 lg:mb-6">Curated Resources</h2>
-          <p className="text-stone-600 text-base lg:text-lg max-w-2xl mx-auto font-light leading-relaxed">
+          <h2 className="text-3xl md:text-5xl font-serif text-stone-900 mb-4">Curated Resources</h2>
+          <p className="text-stone-600 max-w-xl mx-auto font-light leading-relaxed">
             Tools, courses, and guides designed to deepen your understanding and practice.
           </p>
         </div>
@@ -28,8 +27,8 @@ const ProductSection: React.FC<ProductSectionProps> = ({ products }) => {
           <div className="mb-12 md:mb-16">
             <div className="bg-stone-900 rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row min-h-[400px]">
               <div className="md:w-1/2 relative h-64 md:h-auto overflow-hidden">
-                <img
-                  src={featuredProduct.imageUrl}
+                <img 
+                  src={featuredProduct.imageUrl} 
                   alt={featuredProduct.name}
                   className="w-full h-full object-cover opacity-80 hover:scale-105 transition-transform duration-700"
                 />
@@ -37,14 +36,14 @@ const ProductSection: React.FC<ProductSectionProps> = ({ products }) => {
                   Featured Collection
                 </div>
               </div>
-              <div className="md:w-1/2 p-8 md:p-12 lg:p-16 flex flex-col justify-center text-left">
-                <h3 className="text-2xl md:text-4xl lg:text-5xl font-serif text-white mb-4 lg:mb-6 leading-tight">{featuredProduct.name}</h3>
-                <p className="text-stone-400 text-base md:text-lg lg:text-xl leading-relaxed mb-8 lg:mb-10 border-l-2 border-brand-gold pl-4 lg:pl-6">
+              <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center text-left">
+                <h3 className="text-2xl md:text-4xl font-serif text-white mb-4 leading-tight">{featuredProduct.name}</h3>
+                <p className="text-stone-400 text-base md:text-lg leading-relaxed mb-8 border-l-2 border-brand-gold pl-4">
                   {featuredProduct.description}
                 </p>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
                   <span className="text-2xl font-light text-white">{featuredProduct.price}</span>
-                  <a
+                  <a 
                     href={featuredProduct.link}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -59,12 +58,12 @@ const ProductSection: React.FC<ProductSectionProps> = ({ products }) => {
         )}
 
         {/* Product Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 lg:gap-12 mb-16 lg:mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
           {otherProducts.map((product) => (
             <div key={product.id} className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-stone-200 flex flex-col">
               <div className="h-64 sm:h-72 overflow-hidden bg-stone-200 relative">
-                 <img
-                   src={product.imageUrl}
+                 <img 
+                   src={product.imageUrl} 
                    alt={product.name}
                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
                  />
@@ -81,7 +80,7 @@ const ProductSection: React.FC<ProductSectionProps> = ({ products }) => {
                 </p>
                 <div className="flex items-center justify-between mt-auto pt-6 border-t border-stone-100">
                   <span className="text-lg font-bold text-stone-900">{product.price}</span>
-                  <a
+                  <a 
                     href={product.link}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -96,7 +95,7 @@ const ProductSection: React.FC<ProductSectionProps> = ({ products }) => {
         </div>
 
         <div className="text-center">
-          <a
+          <a 
             href="https://biblicalman.gumroad.com"
             target="_blank"
             rel="noopener noreferrer"

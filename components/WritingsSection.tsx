@@ -17,20 +17,20 @@ const WritingsSection: React.FC<WritingsSectionProps> = ({ posts, onReadPost }) 
   };
 
   return (
-    <div className="py-20 lg:py-28 bg-white">
+    <div className="py-20 bg-white">
       {postToShare && (
-        <ShareModal
+        <ShareModal 
           postTitle={postToShare.title}
           postUrl={postToShare.link}
           onClose={() => setPostToShare(null)}
         />
       )}
 
-      <div className="max-w-7xl mx-auto px-4 lg:px-8">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-12 lg:mb-16">
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-12">
           <div>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-stone-900 mb-2 lg:mb-3">From the Desk</h2>
-            <p className="text-stone-500 text-base lg:text-lg">Latest essays from The Biblical Man.</p>
+            <h2 className="text-3xl md:text-4xl font-serif text-stone-900 mb-2">From the Desk</h2>
+            <p className="text-stone-500">Latest essays from The Biblical Man.</p>
           </div>
           <a 
             href={SUBSTACK_URL}
@@ -42,7 +42,7 @@ const WritingsSection: React.FC<WritingsSectionProps> = ({ posts, onReadPost }) 
           </a>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {posts.map((post) => (
             <div 
               key={post.id} 
