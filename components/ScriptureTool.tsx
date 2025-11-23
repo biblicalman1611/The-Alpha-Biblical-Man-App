@@ -44,6 +44,9 @@ const ScriptureTool: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceRef = useRef<AudioBufferSourceNode | null>(null);
+  
+  // Copy State
+  const [copiedLesson, setCopiedLesson] = useState(false);
 
   // Cleanup audio on unmount
   useEffect(() => {
@@ -60,6 +63,7 @@ const ScriptureTool: React.FC = () => {
       sourceRef.current = null;
     }
     setIsPlaying(false);
+    setCopiedLesson(false);
   }, [result]);
 
   const performSearch = async (searchTopic: string) => {
@@ -96,6 +100,17 @@ const ScriptureTool: React.FC = () => {
   const handleHistoryClick = (historyItem: string) => {
     setTopic(historyItem);
     performSearch(historyItem);
+  };
+
+  const handleCopyLesson = async () => {
+    if (!result?.microLesson) return;
+    try {
+      await navigator.clipboard.writeText(result.microLesson);
+      setCopiedLesson(true);
+      setTimeout(() => setCopiedLesson(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
   };
 
   const toggleAudio = async () => {
@@ -265,10 +280,25 @@ const ScriptureTool: React.FC = () => {
 
             {/* Card 2: Micro Lesson - Light Card */}
             <div className="bg-white p-8 rounded-2xl border border-stone-100 shadow-sm flex flex-col">
-              <span className="text-xs font-bold tracking-widest text-stone-400 uppercase mb-4 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-brand-gold"></span>
-                Micro Lesson
-              </span>
+              <div className="flex justify-between items-start mb-4">
+                <span className="text-xs font-bold tracking-widest text-stone-400 uppercase flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-gold"></span>
+                  Micro Lesson
+                </span>
+                <button 
+                   onClick={handleCopyLesson}
+                   className="text-stone-400 hover:text-stone-900 transition-colors"
+                   title="Copy to clipboard"
+                 >
+                   {copiedLesson ? (
+                     <span className="text-xs font-bold text-green-600 animate-fadeIn">Copied</span>
+                   ) : (
+                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                       <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5" />
+                     </svg>
+                   )}
+                 </button>
+              </div>
               <p className="text-lg text-stone-700 leading-relaxed font-serif flex-grow">
                 {result.microLesson}
               </p>

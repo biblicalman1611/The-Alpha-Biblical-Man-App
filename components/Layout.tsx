@@ -43,13 +43,15 @@ const Layout: React.FC<LayoutProps> = ({
   return (
     <div className="min-h-screen flex flex-col font-sans text-stone-900">
       <header 
-        className={`fixed top-0 w-full z-40 transition-all duration-300 ${
-          scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-4' : 'bg-transparent py-6'
+        className={`fixed top-0 w-full z-40 transition-all duration-500 border-b ${
+          scrolled || mobileMenuOpen
+            ? 'bg-white/95 backdrop-blur-md shadow-sm py-4 border-stone-200/50' 
+            : 'bg-transparent py-6 border-transparent'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center relative">
           <div 
-            className="text-2xl font-serif font-bold tracking-tight cursor-pointer uppercase select-none"
+            className="text-xl md:text-2xl font-serif font-bold tracking-tight cursor-pointer uppercase select-none z-50 relative"
             onClick={() => onNavigate(NavSection.HOME)}
           >
             The Biblical Man
@@ -106,18 +108,17 @@ const Layout: React.FC<LayoutProps> = ({
 
           {/* Mobile Menu Toggle */}
           <button 
-            className="md:hidden p-2"
+            className="md:hidden p-2 z-50 relative"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            <div className="w-6 h-0.5 bg-stone-900 mb-1"></div>
-            <div className="w-6 h-0.5 bg-stone-900 mb-1"></div>
-            <div className="w-6 h-0.5 bg-stone-900"></div>
+            <div className={`w-6 h-0.5 bg-stone-900 mb-1 transition-all ${mobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></div>
+            <div className={`w-6 h-0.5 bg-stone-900 mb-1 transition-all ${mobileMenuOpen ? 'opacity-0' : ''}`}></div>
+            <div className={`w-6 h-0.5 bg-stone-900 transition-all ${mobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></div>
           </button>
         </div>
 
         {/* Mobile Nav Dropdown */}
-        {mobileMenuOpen && (
-           <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-lg border-t border-stone-100 p-4 flex flex-col gap-4 fade-in">
+        <div className={`md:hidden absolute top-full left-0 w-full bg-white/98 backdrop-blur-xl shadow-xl border-t border-stone-100 p-6 flex flex-col gap-6 transition-all duration-300 origin-top ${mobileMenuOpen ? 'opacity-100 scale-y-100' : 'opacity-0 scale-y-0 pointer-events-none'}`}>
              {navItems.map((item) => (
               <button
                 key={item.value}
@@ -125,46 +126,45 @@ const Layout: React.FC<LayoutProps> = ({
                   onNavigate(item.value);
                   setMobileMenuOpen(false);
                 }}
-                className="text-left text-sm font-medium tracking-wide uppercase py-2 border-b border-stone-100 text-stone-600"
+                className="text-left text-base font-medium tracking-wide uppercase py-2 border-b border-stone-50 text-stone-600 hover:text-stone-900 hover:pl-2 transition-all"
               >
                 {item.label}
               </button>
             ))}
             {isLoggedIn ? (
-              <>
+              <div className="pt-4 border-t border-stone-100">
                  <button
                   onClick={() => {
                     onNavigate(NavSection.MEMBERS);
                     setMobileMenuOpen(false);
                   }}
-                  className="text-left text-sm font-bold tracking-wide uppercase py-2 border-b border-stone-100 text-stone-900 flex items-center gap-2"
+                  className="w-full text-left text-base font-bold tracking-wide uppercase py-3 text-stone-900 flex items-center gap-3 bg-stone-50 px-4 rounded-lg"
                 >
                   <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                  Members Area
+                  Access Members Area
                 </button>
                 <button
                   onClick={() => {
                     onLogout();
                     setMobileMenuOpen(false);
                   }}
-                  className="text-left text-sm font-medium tracking-wide uppercase py-2 text-stone-400 hover:text-stone-900"
+                  className="w-full text-left text-sm font-medium tracking-wide uppercase py-3 px-4 text-stone-400 hover:text-stone-900"
                 >
                   Log Out
                 </button>
-              </>
+              </div>
             ) : (
                <button
                   onClick={() => {
                     onLoginClick();
                     setMobileMenuOpen(false);
                   }}
-                  className="text-left text-sm font-bold tracking-wide uppercase py-2 border-b border-stone-100 text-stone-900"
+                  className="w-full text-center text-sm font-bold tracking-wide uppercase py-3 bg-stone-900 text-white rounded-lg mt-2"
                 >
-                  Login
+                  Member Login
                 </button>
             )}
-           </div>
-        )}
+        </div>
       </header>
 
       <main className="flex-grow pt-0">
@@ -174,17 +174,17 @@ const Layout: React.FC<LayoutProps> = ({
       {/* Global Radio Player */}
       <RadioPlayer />
 
-      <footer className="bg-stone-900 text-stone-400 py-12">
-        <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
+      <footer className="bg-stone-900 text-stone-400 py-16">
+        <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="col-span-1 md:col-span-2">
-            <h4 className="text-white font-serif text-2xl mb-4 uppercase">The Biblical Man</h4>
-            <p className="max-w-xs text-sm leading-relaxed">
+            <h4 className="text-white font-serif text-3xl mb-6 uppercase tracking-tight">The Biblical Man</h4>
+            <p className="max-w-xs text-base leading-relaxed text-stone-500">
               Cultivating depth in a distracted world through scripture, essays, and curated resources.
             </p>
           </div>
           <div>
-            <h5 className="text-white uppercase tracking-widest text-xs font-bold mb-4">Explore</h5>
-            <ul className="space-y-2 text-sm">
+            <h5 className="text-white uppercase tracking-widest text-xs font-bold mb-6">Explore</h5>
+            <ul className="space-y-4 text-sm">
               <li><button onClick={() => onNavigate(NavSection.MISSION)} className="hover:text-white transition-colors">Mission</button></li>
               <li><button onClick={() => onNavigate(NavSection.WRITINGS)} className="hover:text-white transition-colors">Writings</button></li>
               <li><button onClick={() => onNavigate(NavSection.TOOL)} className="hover:text-white transition-colors">Micro-Learning</button></li>
@@ -192,17 +192,17 @@ const Layout: React.FC<LayoutProps> = ({
             </ul>
           </div>
           <div>
-            <h5 className="text-white uppercase tracking-widest text-xs font-bold mb-4">Connect</h5>
-            <ul className="space-y-2 text-sm">
+            <h5 className="text-white uppercase tracking-widest text-xs font-bold mb-6">Connect</h5>
+            <ul className="space-y-4 text-sm">
               <li><a href={SUBSTACK_URL} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Substack</a></li>
               <li><a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Twitter</a></li>
               <li><a href="mailto:contact@thebiblicalmantruth.com" className="hover:text-white transition-colors">Contact</a></li>
             </ul>
           </div>
         </div>
-        <div className="max-w-6xl mx-auto px-4 mt-12 pt-8 border-t border-stone-800 text-xs text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="max-w-6xl mx-auto px-6 mt-16 pt-8 border-t border-stone-800 text-xs text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4 text-stone-600">
           <span>&copy; {new Date().getFullYear()} The Biblical Man. All rights reserved.</span>
-          <span className="text-stone-600">www.thebiblicalmantruth.com</span>
+          <span>www.thebiblicalmantruth.com</span>
         </div>
       </footer>
     </div>

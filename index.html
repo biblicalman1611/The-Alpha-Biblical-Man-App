@@ -38,6 +38,9 @@
         font-family: 'Inter', sans-serif;
         background-color: #fafaf9;
         color: #1c1917;
+        /* Critical for "Premium" feel on MacOS/iOS */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
       h1, h2, h3, h4, h5, h6 {
         font-family: 'Crimson Pro', serif;
@@ -48,6 +51,21 @@
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* Scrollbar polish */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #fafaf9; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #d6d3d1; 
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #a8a29e; 
       }
 
       /* Dynamic Article Reader Styles */
