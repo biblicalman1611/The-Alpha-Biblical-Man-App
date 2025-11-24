@@ -25,7 +25,7 @@ const parseJSON = <T>(text: string | undefined): T | null => {
 
 export const startChatSession = (): Chat => {
   return ai.chats.create({
-    model: 'gemini-1.5-pro',
+    model: 'gemini-3-pro-preview',
     config: {
       systemInstruction: `You are "The Steward", an AI guide for "The Biblical Man" website.
       Your goal is to help men navigate the resources, entice them to join the "Inner Circle" membership ($3/month), and recommend products like "The Vault" or "Morning Liturgy".
@@ -46,7 +46,7 @@ export const startChatSession = (): Chat => {
 };
 
 export const getScriptureInsight = async (topic: string): Promise<ScriptureResponse | null> => {
-  const modelId = "gemini-1.5-flash";
+  const modelId = "gemini-2.5-flash";
 
   const prompt = `
     You are a wise spiritual mentor representing "The Biblical Man". 
@@ -90,7 +90,7 @@ export const getScriptureInsight = async (topic: string): Promise<ScriptureRespo
 export const generateScriptureAudio = async (text: string): Promise<string | null> => {
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash-preview-tts',
       contents: {
         parts: [{ text: text }],
       },
@@ -126,7 +126,7 @@ export const generateVerseImage = async (verse: string, reference: string): Prom
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash-image',
       contents: {
         parts: [{ text: prompt }]
       },
@@ -169,7 +169,7 @@ export const generateWarPlan = async (struggle: string, goal: string, time: stri
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -235,7 +235,7 @@ export const generateArticleInsight = async (content: string): Promise<ArticleIn
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -274,7 +274,7 @@ export const generateAnalyticsInsight = async (dataContext: string): Promise<Bus
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -314,7 +314,7 @@ export const generateTutorialAudio = async (userName: string): Promise<string | 
 
   try {
     const scriptResponse = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash",
       contents: scriptPrompt,
     });
 
@@ -322,7 +322,7 @@ export const generateTutorialAudio = async (userName: string): Promise<string | 
     if (!scriptText) return null;
 
     const audioResponse = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash-preview-tts',
       contents: {
         parts: [{ text: scriptText }],
       },
@@ -362,7 +362,7 @@ export const getScribePassage = async (theme: string): Promise<{ reference: stri
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -395,7 +395,7 @@ export const getScribeAnalysis = async (text: string): Promise<string | null> =>
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash",
       contents: prompt,
     });
 
