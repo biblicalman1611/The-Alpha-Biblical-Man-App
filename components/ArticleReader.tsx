@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BlogPost, ArticleInsight } from '../types';
 import { generateArticleInsight } from '../services/geminiService';
+import SEO from './SEO';
 
 interface ArticleReaderProps {
   post: BlogPost;
@@ -31,6 +32,13 @@ const ArticleReader: React.FC<ArticleReaderProps> = ({ post, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-[100] bg-white flex flex-col md:flex-row animate-fadeIn">
+      {/* Dynamic SEO for this specific article */}
+      <SEO 
+        title={`${post.title} | The Biblical Man`} 
+        description={post.excerpt}
+        type="article"
+      />
+
       {/* Sidebar / Insight Panel */}
       <div className="w-full md:w-80 bg-stone-900 text-stone-100 p-8 flex flex-col border-r border-stone-800 overflow-y-auto">
         <button 

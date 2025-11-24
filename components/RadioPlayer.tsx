@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-// Using the semi-colon suffix is a common Shoutcast hack to force stream playback 
-// on browsers that might otherwise try to render the status page.
-const STREAM_URL = "https://s6.voscast.com:11272/;";
-const EXTERNAL_STREAM_URL = "http://s6.voscast.com:11272/stream";
+// Final Fight Bible Radio (RadioBOSS Stream)
+const STREAM_URL = "https://c12.radioboss.fm/stream/453";
+const EXTERNAL_STREAM_URL = "https://www.finalfightbibleradio.com";
 
 const RadioPlayer: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -11,74 +10,97 @@ const RadioPlayer: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasError, setHasError] = useState(false);
   
+  // Use a key to force re-render of audio element on error retry
+  const [audioKey, setAudioKey] = useState(0);
+  
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const handleWaiting = () => setIsLoading(true);
+    const handleLoadStart = () => {
+       if (isPlaying) setIsLoading(true);
+    };
+
     const handleCanPlay = () => {
       setIsLoading(false);
       setHasError(false);
     };
+    
     const handlePlaying = () => {
       setIsLoading(false);
       setIsPlaying(true);
       setHasError(false);
     };
+    
     const handleError = (e: Event) => {
       const target = e.target as HTMLAudioElement;
       console.warn(`Radio Playback Error:`, target.error);
       
-      setIsPlaying(false);
-      setIsLoading(false);
-      setHasError(true);
-      
-      // Force expand to show the error/fallback UI
-      setIsExpanded(true);
+      // Only show error state if we were trying to play
+      if (isPlaying || isLoading) {
+        setIsPlaying(false);
+        setIsLoading(false);
+        setHasError(true);
+        setIsExpanded(true);
+      }
     };
 
-    audio.addEventListener('waiting', handleWaiting);
+    // Events
+    audio.addEventListener('loadstart', handleLoadStart);
+    audio.addEventListener('waiting', handleLoadStart);
     audio.addEventListener('canplay', handleCanPlay);
     audio.addEventListener('playing', handlePlaying);
     audio.addEventListener('error', handleError);
 
     return () => {
-      audio.removeEventListener('waiting', handleWaiting);
+      audio.removeEventListener('loadstart', handleLoadStart);
+      audio.removeEventListener('waiting', handleLoadStart);
       audio.removeEventListener('canplay', handleCanPlay);
       audio.removeEventListener('playing', handlePlaying);
       audio.removeEventListener('error', handleError);
     };
-  }, []);
+  }, [isPlaying, isLoading, audioKey]);
 
   const togglePlay = async () => {
-    if (!audioRef.current) return;
+    const audio = audioRef.current;
+    if (!audio) return;
 
     if (isPlaying) {
-      audioRef.current.pause();
+      // STOP
+      audio.pause();
+      audio.src = ""; // Detach stream to stop buffering data
       setIsPlaying(false);
-      // Clean up src to stop downloading/buffering
-      audioRef.current.removeAttribute('src'); 
-      audioRef.current.load();
+      setIsLoading(false);
     } else {
+      // PLAY
       setIsLoading(true);
       setHasError(false);
       
+      // If we had an error previously, force a fresh element next time (optional, but good for clearing bad state)
+      if (hasError) {
+         setAudioKey(prev => prev + 1);
+         // Wait for render cycle to pick up new ref? 
+         // Actually, with React state update, we need to wait. 
+         // Better strategy: Just set src with cache buster.
+      }
+
       try {
-        // Set src immediately before playing to ensure fresh stream connection
-        audioRef.current.src = STREAM_URL;
-        audioRef.current.load();
+        // Add cache buster to ensure live stream, not cached buffer
+        audio.src = `${STREAM_URL}?cb=${Date.now()}`;
+        audio.load(); // Explicitly load
         
-        const playPromise = audioRef.current.play();
+        const playPromise = audio.play();
         if (playPromise !== undefined) {
           playPromise
             .then(() => {
-              setIsExpanded(true);
+               setIsExpanded(true);
             })
             .catch((error) => {
               console.error("Playback start failed:", error);
               setIsLoading(false);
+              setIsPlaying(false);
               setHasError(true);
               setIsExpanded(true);
             });
@@ -101,15 +123,11 @@ const RadioPlayer: React.FC = () => {
   return (
     <div className={`fixed bottom-6 right-6 z-50 flex items-center transition-all duration-300 ${isExpanded ? 'gap-3' : 'gap-0'}`}>
       
-      {/* 
-        Removed crossOrigin="anonymous". 
-        Radio streams often lack CORS headers. Requesting 'anonymous' causes the browser 
-        to block the request if the Access-Control-Allow-Origin header is missing.
-        Standard audio playback does not require CORS unless we use Web Audio API analysis.
-      */}
       <audio
+        key={audioKey}
         ref={audioRef}
         preload="none"
+        crossOrigin="anonymous" // Attempt anonymously first
       />
 
       {/* Expanded Control Panel */}

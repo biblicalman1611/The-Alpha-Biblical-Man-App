@@ -1,4 +1,5 @@
 
+
 export interface BlogPost {
   id: string;
   title: string;
@@ -18,6 +19,7 @@ export interface Product {
   imageUrl: string;
   cta: string;
   link: string; // Link to gumroad product
+  category: string;
   isFeatured?: boolean;
 }
 

@@ -10,6 +10,7 @@ import AboutSection from './components/AboutSection';
 import LoginModal from './components/LoginModal';
 import ArticleReader from './components/ArticleReader';
 import AdminDashboard from './components/AdminDashboard';
+import SEO from './components/SEO';
 import { NavSection, BlogPost } from './types';
 import { BLOG_POSTS, PRODUCTS } from './constants';
 import { fetchLatestPosts } from './services/rssService';
@@ -92,6 +93,14 @@ const App: React.FC = () => {
       onLoginClick={() => setShowLoginModal(true)}
       onLogout={handleLogout}
     >
+      {/* Default SEO - overwritten by child components like ArticleReader if active */}
+      {!selectedPost && (
+        <SEO 
+          title="The Biblical Man | Truth & Tradition"
+          description="A digital sanctuary for modern Christian men. Features a micro-scripture tool, essays on biblical masculinity, and curated resources for the disciplined life."
+        />
+      )}
+
       {/* Modals */}
       {showLoginModal && (
         <LoginModal 

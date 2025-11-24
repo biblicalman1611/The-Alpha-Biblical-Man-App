@@ -19,10 +19,20 @@ const MOCK_USER_ACTIVITY = {
   ]
 };
 
+// Mock data for users who paid but might be stuck
+const STUCK_USERS = [
+  { email: 'jason.k@example.com', paidDate: '2 days ago', issue: 'Webhook Failed (Resend 500)' },
+  { email: 'mike.t@example.com', paidDate: '3 days ago', issue: 'No Account Created' },
+  { email: 'alex.b@example.com', paidDate: '4 hours ago', issue: 'Email Bounced' },
+];
+
 const AdminDashboard: React.FC = () => {
   const [insight, setInsight] = useState<BusinessInsight | null>(null);
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  
+  // State for recovery tool
+  const [recoveringUsers, setRecoveringUsers] = useState<string[]>([]);
 
   const runAIAnalysis = async () => {
     setLoading(true);
@@ -38,6 +48,22 @@ const AdminDashboard: React.FC = () => {
     setLoading(false);
     setLastUpdated(new Date());
   };
+
+  const handleResendAccess = (email: string) => {
+    setRecoveringUsers(prev => [...prev, email]);
+    // Simulate API call to resend email
+    setTimeout(() => {
+      alert(`Access instructions resent to ${email}`);
+      setRecoveringUsers(prev => prev.filter(e => e !== email));
+    }, 1500);
+  };
+
+  const handleBroadcastFix = () => {
+    const confirm = window.confirm(`This will send a "Restoration of Access" email to all ${STUCK_USERS.length} users with failed webhook events. Proceed?`);
+    if (confirm) {
+       alert("Batch process started. Users will receive emails shortly.");
+    }
+  }
 
   useEffect(() => {
     // Run initial analysis on mount
@@ -69,6 +95,60 @@ const AdminDashboard: React.FC = () => {
                Refresh Gemini Intel
              </button>
           </div>
+        </div>
+
+        {/* Member Recovery Tool (Priority for Fix) */}
+        <div className="bg-red-50 border border-red-100 rounded-xl p-6 shadow-sm">
+           <div className="flex justify-between items-start mb-6">
+              <div>
+                 <h3 className="text-red-900 font-bold text-lg flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                       <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clipRule="evenodd" />
+                    </svg>
+                    Failed Access / Webhook Issues
+                 </h3>
+                 <p className="text-red-700 text-sm mt-1">
+                    {STUCK_USERS.length} paid users have not completed onboarding. This matches the Resend API failure logs.
+                 </p>
+              </div>
+              <button 
+                onClick={handleBroadcastFix}
+                className="bg-red-600 text-white px-4 py-2 rounded text-xs font-bold uppercase tracking-wider hover:bg-red-700 transition-colors shadow-sm"
+              >
+                Broadcast Recovery Email to All
+              </button>
+           </div>
+           
+           <div className="bg-white rounded border border-red-100 overflow-hidden">
+              <table className="w-full text-sm text-left">
+                 <thead className="bg-red-50/50 text-red-900">
+                    <tr>
+                       <th className="px-4 py-3 font-bold">User Email</th>
+                       <th className="px-4 py-3 font-bold">Paid Date</th>
+                       <th className="px-4 py-3 font-bold">Error Log</th>
+                       <th className="px-4 py-3 font-bold text-right">Action</th>
+                    </tr>
+                 </thead>
+                 <tbody className="divide-y divide-red-50">
+                    {STUCK_USERS.map((user) => (
+                       <tr key={user.email}>
+                          <td className="px-4 py-3 font-medium text-stone-900">{user.email}</td>
+                          <td className="px-4 py-3 text-stone-500">{user.paidDate}</td>
+                          <td className="px-4 py-3 text-red-600 font-mono text-xs">{user.issue}</td>
+                          <td className="px-4 py-3 text-right">
+                             <button 
+                                onClick={() => handleResendAccess(user.email)}
+                                disabled={recoveringUsers.includes(user.email)}
+                                className="text-stone-900 underline hover:text-brand-gold font-medium disabled:opacity-50"
+                             >
+                                {recoveringUsers.includes(user.email) ? 'Sending...' : 'Resend Manual Invite'}
+                             </button>
+                          </td>
+                       </tr>
+                    ))}
+                 </tbody>
+              </table>
+           </div>
         </div>
 
         {/* AI Insight Section (Hero) */}

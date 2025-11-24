@@ -1,4 +1,5 @@
 
+
 import { BlogPost, Product } from './types';
 
 const PLACEHOLDER_TEXT_1 = `
@@ -69,6 +70,7 @@ export const PRODUCTS: Product[] = [
     imageUrl: "https://picsum.photos/seed/vault/800/600?grayscale", 
     cta: "Get Lifetime Access",
     link: "https://biblicalman.gumroad.com",
+    category: "Bundles",
     isFeatured: true
   },
   {
@@ -78,7 +80,8 @@ export const PRODUCTS: Product[] = [
     price: "$27",
     imageUrl: "https://picsum.photos/seed/liturgy/400/500?grayscale",
     cta: "Start the Protocol",
-    link: "https://biblicalman.gumroad.com"
+    link: "https://biblicalman.gumroad.com",
+    category: "Guides"
   },
   {
     id: 'strength-training',
@@ -87,6 +90,7 @@ export const PRODUCTS: Product[] = [
     price: "$45",
     imageUrl: "https://picsum.photos/seed/strength/400/500?grayscale",
     cta: "Train for War",
-    link: "https://biblicalman.gumroad.com"
+    link: "https://biblicalman.gumroad.com",
+    category: "Training"
   }
 ];
