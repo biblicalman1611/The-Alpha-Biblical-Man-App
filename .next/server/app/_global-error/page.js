@@ -1,0 +1,11 @@
+var R=require("../../chunks/ssr/[turbopack]_runtime.js")("server/app/_global-error/page.js")
+R.c("server/chunks/ssr/[root-of-the-server]__8df4c9dc._.js")
+R.c("server/chunks/ssr/biblical-truth-website_cabad8c9._.js")
+R.c("server/chunks/ssr/facaf_next_dist_de8af696._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__5f0c4d81._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__e8056e7f._.js")
+R.c("server/chunks/ssr/facaf_next_dist_aecaa264._.js")
+R.c("server/chunks/ssr/biblical-truth-website_app_2ad3f1bd._.js")
+R.c("server/chunks/ssr/59e36__next-internal_server_app__global-error_page_actions_0edddb68.js")
+R.m(46705)
+module.exports=R.m(46705).exports

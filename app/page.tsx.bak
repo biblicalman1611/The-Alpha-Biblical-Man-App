@@ -1,0 +1,121 @@
+import Link from 'next/link';
+
+export default function Home() {
+  return (
+    <main className="min-h-screen bg-black text-white">
+
+      {/* Simple Navigation */}
+      <nav className="border-b border-white/10">
+        <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+          <Link href="/" className="text-xl font-black tracking-tight">
+            THE BIBLICAL MAN
+          </Link>
+          <Link
+            href="/login"
+            className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
+          >
+            Login
+          </Link>
+        </div>
+      </nav>
+
+      {/* Hero Section - Clean & Minimal */}
+      <section className="px-6 py-32 md:py-48">
+        <div className="max-w-4xl mx-auto text-center">
+
+          <h1 className="text-6xl md:text-8xl font-black mb-8 leading-[0.95] tracking-tight">
+            READ ON SUBSTACK.<br />
+            <span className="text-amber-600">TRAIN HERE.</span>
+          </h1>
+
+          <p className="text-xl md:text-2xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">
+            You get the intel on Substack. You get the tools here—24/7 radio, organized library, and brotherhood.
+          </p>
+
+          <Link
+            href="/gate-pass"
+            className="inline-block bg-amber-600 hover:bg-amber-500 text-white text-lg font-bold px-10 py-5 rounded-lg transition-all"
+          >
+            Join The War Room — $3
+          </Link>
+
+          <p className="text-sm text-gray-600 mt-6">
+            Lifetime access. No subscription. 12,402 men inside.
+          </p>
+        </div>
+      </section>
+
+      {/* Three Feature Grid */}
+      <section className="px-6 py-24 border-t border-white/10">
+        <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-12">
+
+          <div className="text-center">
+            <div className="text-4xl mb-4">📻</div>
+            <h3 className="text-xl font-bold mb-3">24/7 Radio</h3>
+            <p className="text-gray-400 leading-relaxed">
+              Non-stop biblical preaching, sermons, and hymns. No ads, no fluff.
+            </p>
+          </div>
+
+          <div className="text-center">
+            <div className="text-4xl mb-4">📚</div>
+            <h3 className="text-xl font-bold mb-3">Tactical Library</h3>
+            <p className="text-gray-400 leading-relaxed">
+              Organized guides on marriage, fatherhood, theology. No searching through old emails.
+            </p>
+          </div>
+
+          <div className="text-center">
+            <div className="text-4xl mb-4">⚔️</div>
+            <h3 className="text-xl font-bold mb-3">Brotherhood</h3>
+            <p className="text-gray-400 leading-relaxed">
+              Real connection with men in the fight. Iron sharpens iron.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      {/* Social Proof */}
+      <section className="px-6 py-24 border-t border-white/10">
+        <div className="max-w-3xl mx-auto text-center">
+
+          <div className="mb-8">
+            <div className="text-amber-500 text-xl mb-2">★★★★★</div>
+          </div>
+
+          <blockquote className="text-2xl font-serif italic text-gray-300 mb-6">
+            "I've been subscribed to the Substack for years, but the War Room is where the real change happened. The radio alone is worth 10x the price."
+          </blockquote>
+
+          <p className="text-sm text-gray-500 uppercase tracking-widest">
+            — Mark T., Texas
+          </p>
+
+          <div className="mt-16">
+            <Link
+              href="/gate-pass"
+              className="inline-block bg-white text-black hover:bg-gray-100 text-lg font-bold px-10 py-5 rounded-lg transition-colors"
+            >
+              Join The War Room — $3
+            </Link>
+          </div>
+
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-white/10 py-12">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-gray-500">
+          <div>© 2025 The Biblical Man</div>
+          <div className="flex gap-8">
+            <Link href="/login" className="hover:text-white transition-colors">Login</Link>
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
+          </div>
+        </div>
+      </footer>
+
+    </main>
+  );
+}

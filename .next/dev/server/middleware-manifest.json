@@ -1,0 +1,37 @@
+{
+  "version": 3,
+  "middleware": {
+    "/": {
+      "files": [
+        "server/edge/chunks/biblical-truth-website_5105ef1c._.js",
+        "server/edge/chunks/[root-of-the-server]__b2ec4ada._.js",
+        "server/edge/chunks/turbopack-biblical-truth-website_edge-wrapper_f3ba6ea6.js"
+      ],
+      "name": "middleware",
+      "page": "/",
+      "matchers": [
+        {
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/war-room(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(\\\\.json)?[\\/#\\?]?$",
+          "originalSource": "/war-room/:path*"
+        },
+        {
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/hub(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(\\\\.json)?[\\/#\\?]?$",
+          "originalSource": "/hub/:path*"
+        }
+      ],
+      "wasm": [],
+      "assets": [],
+      "env": {
+        "__NEXT_BUILD_ID": "development",
+        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "E8M/Z31ZBay3dCVw0NAPSVzMEPXiU4ss6FZnb/Gv3rs=",
+        "__NEXT_PREVIEW_MODE_ID": "446c0220c881f7186b2597a29f585862",
+        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "f33b564dc429dc6569282de262c74225a896a451308e2c869ad115c4d5404308",
+        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "da95f45ec33a3990d6b240e242a14cdb7cc7c6d89d57564a9e06bad52257a75b"
+      }
+    }
+  },
+  "sortedMiddleware": [
+    "/"
+  ],
+  "functions": {}
+}

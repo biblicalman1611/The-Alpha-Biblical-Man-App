@@ -1,0 +1,3 @@
+module.exports=[11820,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(29256);a.n(d("[project]/biblical-truth-website/node_modules/next/dist/client/components/builtin/global-error.js <module evaluation>"))},80674,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(29256);a.n(d("[project]/biblical-truth-website/node_modules/next/dist/client/components/builtin/global-error.js"))},20650,a=>{"use strict";a.i(11820);var b=a.i(80674);a.n(b)}];
+
+//# sourceMappingURL=facaf_next_dist_client_components_builtin_global-error_5ba021d5.js.map
