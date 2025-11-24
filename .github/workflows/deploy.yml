@@ -35,6 +35,6 @@ jobs:
           gcloud run deploy the-biblical-man \
             --image gcr.io/the-biblical-man/the-biblical-man:latest \
             --platform managed \
-            --us-west1 \
+            --region us-west1 \
             --allow-unauthenticated \
             --project the-biblical-man
