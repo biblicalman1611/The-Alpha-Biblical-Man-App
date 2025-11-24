@@ -41,7 +41,7 @@ export const getWelcomeTutorialScript = async (userName: string): Promise<string
     return [];
   }
 
-  const modelId = "gemini-2.5-flash";
+  const modelId = "gemini-1.5-flash";
 
   const prompt = `
     You are a wise, masculine mentor welcoming a new brother named "${userName}" to "The Biblical Man" member area.
@@ -87,7 +87,7 @@ export const getScriptureInsight = async (topic: string): Promise<ScriptureRespo
     return null;
   }
 
-  const modelId = "gemini-2.5-flash";
+  const modelId = "gemini-1.5-flash";
 
   const prompt = `
     You are a wise spiritual mentor representing "The Biblical Man".
@@ -146,7 +146,7 @@ export const generateArticleInsight = async (content: string): Promise<ArticleIn
   `;
 
   try {
-    const response = await callGeminiAPI("gemini-2.5-flash", prompt, {
+    const response = await callGeminiAPI("gemini-1.5-flash", prompt, {
       generationConfig: {
         responseMimeType: "application/json",
       }
@@ -180,7 +180,7 @@ export const generateAnalyticsInsight = async (dataContext: string): Promise<Bus
   `;
 
   try {
-    const response = await callGeminiAPI("gemini-2.5-flash", prompt, {
+    const response = await callGeminiAPI("gemini-1.5-flash", prompt, {
       generationConfig: {
         responseMimeType: "application/json",
       }
