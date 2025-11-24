@@ -33,8 +33,21 @@ ENV VITE_FIREBASE_STORAGE_BUCKET=$VITE_FIREBASE_STORAGE_BUCKET
 ENV VITE_FIREBASE_MESSAGING_SENDER_ID=$VITE_FIREBASE_MESSAGING_SENDER_ID
 ENV VITE_FIREBASE_APP_ID=$VITE_FIREBASE_APP_ID
 
+# Debug: Verify environment variables are set correctly
+RUN echo "=== BUILD ENVIRONMENT DEBUG ===" && \
+    echo "VITE_GEMINI_API_KEY length: $(echo -n "$VITE_GEMINI_API_KEY" | wc -c)" && \
+    echo "VITE_GEMINI_API_KEY prefix: ${VITE_GEMINI_API_KEY:0:15}..." && \
+    echo "VITE_FIREBASE_API_KEY length: $(echo -n "$VITE_FIREBASE_API_KEY" | wc -c)" && \
+    echo "All VITE_ env vars:" && env | grep VITE_ | sed 's/=.*/=***/' && \
+    echo "=== END DEBUG ==="
+
 # Build the app with Vite (will use ENV vars, not .env file)
 RUN npm run build
+
+# Debug: Check what got baked into the bundle
+RUN echo "=== BUNDLE DEBUG ===" && \
+    grep -r "AIzaSy" dist/ | head -5 || echo "No API keys found in bundle (good if using runtime config)" && \
+    echo "=== END BUNDLE DEBUG ==="
 
 # Production stage
 FROM nginx:alpine
