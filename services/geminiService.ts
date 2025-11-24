@@ -6,6 +6,63 @@ const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
 // though per instructions we assume it's there.
 const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
+/**
+ * Generate a personalized welcome tutorial script for new members
+ */
+export const getWelcomeTutorialScript = async (userName: string): Promise<string[]> => {
+  if (!ai) {
+    console.error("API Key is missing.");
+    return [];
+  }
+
+  const modelId = "gemini-2.5-flash";
+
+  const prompt = `
+    You are a wise, masculine mentor welcoming a new brother named "${userName}" to "The Biblical Man" member area.
+
+    Generate a 5-step voice tutorial script that will be read aloud using text-to-speech. Each step should:
+    1. Be conversational and personal (address him by name in the first step)
+    2. Be concise (2-3 sentences max per step)
+    3. Have a tone of strength, wisdom, and brotherhood
+    4. Explain one key feature of the member dashboard
+
+    The 5 steps should cover:
+    1. Welcome and overview
+    2. The 40-Day Protocol (daily discipline tracker)
+    3. Prayer Wall (community prayer requests)
+    4. Bible Study section (audio lessons and teachings)
+    5. Closing encouragement and call to action
+
+    Return ONLY a JSON array of 5 strings, one for each step.
+    Each string should be suitable for text-to-speech (avoid special characters, use natural speech patterns).
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.STRING,
+          },
+        },
+      },
+    });
+
+    const text = response.text;
+    if (!text) return [];
+
+    const script = JSON.parse(text) as string[];
+    return script.length === 5 ? script : [];
+  } catch (error) {
+    console.error("Error generating tutorial script:", error);
+    return [];
+  }
+};
+
 export const getScriptureInsight = async (topic: string): Promise<ScriptureResponse | null> => {
   if (!ai) {
     console.error("API Key is missing.");

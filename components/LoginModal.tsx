@@ -1,69 +1,119 @@
 import React, { useState } from 'react';
+import { registerUser, loginUser, resetPassword } from '../services/authService';
 
 interface LoginModalProps {
-  onLogin: () => void;
+  onLogin: (user: any) => void;
   onClose: () => void;
 }
 
-type ModalView = 'login' | 'recovery';
+type ModalView = 'login' | 'signup' | 'reset';
 
 const LoginModal: React.FC<LoginModalProps> = ({ onLogin, onClose }) => {
   const [view, setView] = useState<ModalView>('login');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [recoverySuccess, setRecoverySuccess] = useState(false);
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [resetSuccess, setResetSuccess] = useState(false);
 
   const validateEmail = (email: string) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setValidationError(null);
+    setError(null);
 
     if (!validateEmail(email)) {
-      setValidationError("Please enter a valid email address.");
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
       return;
     }
 
     setLoading(true);
-    // Simulate network delay for login
-    setTimeout(() => {
+    try {
+      const user = await loginUser(email, password);
+      onLogin(user);
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign in. Please try again.');
+    } finally {
       setLoading(false);
-      onLogin();
-    }, 1500);
+    }
   };
 
-  const handleRecovery = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setValidationError(null);
+    setError(null);
+
+    if (!name.trim()) {
+      setError("Please enter your name.");
+      return;
+    }
 
     if (!validateEmail(email)) {
-      setValidationError("Please enter a valid email address.");
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
       return;
     }
 
     setLoading(true);
-    // Simulate checking Stripe database
-    setTimeout(() => {
+    try {
+      const user = await registerUser(email, password, name);
+      onLogin(user);
+    } catch (err: any) {
+      setError(err.message || 'Failed to create account. Please try again.');
+    } finally {
       setLoading(false);
-      setRecoverySuccess(true);
-      // In a real app, this would trigger a backend resend of the magic link
-    }, 2000);
+    }
   };
 
-  // clear error when typing
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-    if (validationError) setValidationError(null);
+  const handleReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await resetPassword(email);
+      setResetSuccess(true);
+    } catch (err: any) {
+      setError(err.message || 'Failed to send reset email. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const clearForm = () => {
+    setEmail('');
+    setPassword('');
+    setName('');
+    setError(null);
+    setResetSuccess(false);
+  };
+
+  const switchView = (newView: ModalView) => {
+    clearForm();
+    setView(newView);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/80 backdrop-blur-sm p-4 fade-in">
       <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 relative overflow-hidden">
-        <button 
+        <button
           onClick={onClose}
           className="absolute top-4 right-4 text-stone-400 hover:text-stone-900 transition-colors z-10"
         >
@@ -72,143 +122,274 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLogin, onClose }) => {
           </svg>
         </button>
 
+        {/* LOGIN VIEW */}
         {view === 'login' && (
           <div className="animate-fadeIn">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-serif text-stone-900">Member Access</h2>
-              <p className="text-stone-500 mt-2 text-sm">Enter your email to access the inner circle.</p>
+              <h2 className="text-2xl font-serif text-stone-900">Welcome Back</h2>
+              <p className="text-stone-500 mt-2 text-sm">Sign in to access the inner circle</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Email Address</label>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   required
                   value={email}
-                  onChange={handleEmailChange}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError(null);
+                  }}
                   className={`w-full p-3 border rounded focus:ring-2 outline-none transition-all ${
-                    validationError 
-                      ? 'border-red-500 focus:ring-red-200 focus:border-red-500' 
+                    error
+                      ? 'border-red-500 focus:ring-red-200 focus:border-red-500'
                       : 'border-stone-300 focus:ring-stone-900 focus:border-stone-900'
                   }`}
                   placeholder="you@example.com"
                 />
-                {validationError && (
-                  <p className="mt-1 text-xs text-red-600 font-medium animate-fadeIn">{validationError}</p>
-                )}
               </div>
-              <button 
-                type="submit" 
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Password</label>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError(null);
+                  }}
+                  className={`w-full p-3 border rounded focus:ring-2 outline-none transition-all ${
+                    error
+                      ? 'border-red-500 focus:ring-red-200 focus:border-red-500'
+                      : 'border-stone-300 focus:ring-stone-900 focus:border-stone-900'
+                  }`}
+                  placeholder="••••••••"
+                  minLength={6}
+                />
+              </div>
+
+              {error && (
+                <p className="text-xs text-red-600 font-medium animate-fadeIn">{error}</p>
+              )}
+
+              <button
+                type="submit"
                 disabled={loading}
                 className="w-full py-3 bg-stone-900 text-white font-medium rounded hover:bg-stone-800 transition-colors disabled:opacity-70 flex justify-center items-center"
               >
                 {loading ? (
                   <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                ) : "Enter"}
+                ) : "Sign In"}
               </button>
             </form>
 
-            <div className="mt-6 pt-6 border-t border-stone-100 text-center">
-               <button 
-                 onClick={() => {
-                   setView('recovery');
-                   setValidationError(null);
-                   setEmail('');
-                 }}
-                 className="text-xs font-bold uppercase tracking-wider text-brand-gold hover:text-stone-900 transition-colors"
-               >
-                 Paid $3 but can't login?
-               </button>
+            <div className="mt-6 text-center space-y-3">
+              <button
+                onClick={() => switchView('reset')}
+                className="text-xs text-stone-500 hover:text-stone-900 transition-colors"
+              >
+                Forgot your password?
+              </button>
+
+              <div className="pt-4 border-t border-stone-100">
+                <p className="text-sm text-stone-600 mb-2">Don't have an account?</p>
+                <button
+                  onClick={() => switchView('signup')}
+                  className="text-sm font-bold text-brand-gold hover:text-stone-900 transition-colors"
+                >
+                  Create Account →
+                </button>
+              </div>
             </div>
-            
+          </div>
+        )}
+
+        {/* SIGNUP VIEW */}
+        {view === 'signup' && (
+          <div className="animate-fadeIn">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-serif text-stone-900">Join The Brotherhood</h2>
+              <p className="text-stone-500 mt-2 text-sm">Create your account to begin your journey</p>
+            </div>
+
+            <form onSubmit={handleSignup} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Full Name</label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setError(null);
+                  }}
+                  className={`w-full p-3 border rounded focus:ring-2 outline-none transition-all ${
+                    error
+                      ? 'border-red-500 focus:ring-red-200 focus:border-red-500'
+                      : 'border-stone-300 focus:ring-stone-900 focus:border-stone-900'
+                  }`}
+                  placeholder="John Smith"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Email Address</label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError(null);
+                  }}
+                  className={`w-full p-3 border rounded focus:ring-2 outline-none transition-all ${
+                    error
+                      ? 'border-red-500 focus:ring-red-200 focus:border-red-500'
+                      : 'border-stone-300 focus:ring-stone-900 focus:border-stone-900'
+                  }`}
+                  placeholder="you@example.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Password</label>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError(null);
+                  }}
+                  className={`w-full p-3 border rounded focus:ring-2 outline-none transition-all ${
+                    error
+                      ? 'border-red-500 focus:ring-red-200 focus:border-red-500'
+                      : 'border-stone-300 focus:ring-stone-900 focus:border-stone-900'
+                  }`}
+                  placeholder="••••••••"
+                  minLength={6}
+                />
+                <p className="mt-1 text-xs text-stone-400">Minimum 6 characters</p>
+              </div>
+
+              {error && (
+                <p className="text-xs text-red-600 font-medium animate-fadeIn">{error}</p>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 bg-stone-900 text-white font-medium rounded hover:bg-stone-800 transition-colors disabled:opacity-70 flex justify-center items-center"
+              >
+                {loading ? (
+                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                ) : "Create Account"}
+              </button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <p className="text-sm text-stone-600">
+                Already have an account?{' '}
+                <button
+                  onClick={() => switchView('login')}
+                  className="font-bold text-brand-gold hover:text-stone-900 transition-colors"
+                >
+                  Sign In
+                </button>
+              </p>
+            </div>
+
             <p className="mt-4 text-center text-[10px] text-stone-300">
-              Secure login via email link.
+              By creating an account, you agree to our Terms of Service and Privacy Policy.
             </p>
           </div>
         )}
 
-        {view === 'recovery' && (
+        {/* RESET PASSWORD VIEW */}
+        {view === 'reset' && (
           <div className="animate-fadeIn">
-             {!recoverySuccess ? (
-                <>
-                  <div className="text-center mb-6">
-                    <div className="w-12 h-12 bg-brand-gold/10 text-brand-gold rounded-full flex items-center justify-center mx-auto mb-4">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                      </svg>
-                    </div>
-                    <h2 className="text-xl font-serif text-stone-900">Access Recovery</h2>
-                    <p className="text-stone-600 mt-2 text-sm leading-relaxed">
-                      We migrated our system. If you have an active $3 subscription but lost access, enter your email below to verify your account.
-                    </p>
+            {!resetSuccess ? (
+              <>
+                <div className="text-center mb-6">
+                  <div className="w-12 h-12 bg-brand-gold/10 text-brand-gold rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-xl font-serif text-stone-900">Reset Password</h2>
+                  <p className="text-stone-600 mt-2 text-sm">
+                    Enter your email and we'll send you a link to reset your password
+                  </p>
+                </div>
+
+                <form onSubmit={handleReset} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setError(null);
+                      }}
+                      className={`w-full p-3 border rounded focus:ring-2 outline-none transition-all ${
+                        error
+                          ? 'border-red-500 focus:ring-red-200 focus:border-red-500'
+                          : 'border-stone-300 focus:ring-brand-gold focus:border-brand-gold'
+                      }`}
+                      placeholder="you@example.com"
+                    />
                   </div>
 
-                  <form onSubmit={handleRecovery} className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-bold uppercase text-stone-500 mb-1">Stripe Email Address</label>
-                      <input 
-                        type="email" 
-                        required
-                        value={email}
-                        onChange={handleEmailChange}
-                        className={`w-full p-3 border rounded focus:ring-2 outline-none transition-all ${
-                          validationError 
-                            ? 'border-red-500 focus:ring-red-200 focus:border-red-500' 
-                            : 'border-stone-300 focus:ring-brand-gold focus:border-brand-gold'
-                        }`}
-                        placeholder="email@used-for-payment.com"
-                      />
-                       {validationError && (
-                        <p className="mt-1 text-xs text-red-600 font-medium animate-fadeIn">{validationError}</p>
-                      )}
-                    </div>
-                    <button 
-                      type="submit" 
-                      disabled={loading}
-                      className="w-full py-3 bg-brand-gold text-stone-900 font-bold rounded hover:bg-yellow-500 transition-colors disabled:opacity-70 flex justify-center items-center"
-                    >
-                      {loading ? (
-                        <span className="w-5 h-5 border-2 border-stone-900/30 border-t-stone-900 rounded-full animate-spin"></span>
-                      ) : "Verify & Restore Access"}
-                    </button>
-                  </form>
+                  {error && (
+                    <p className="text-xs text-red-600 font-medium animate-fadeIn">{error}</p>
+                  )}
 
-                  <button 
-                    onClick={() => {
-                      setView('login');
-                      setValidationError(null);
-                      setEmail('');
-                    }}
-                    className="w-full mt-4 text-xs text-stone-400 hover:text-stone-900"
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-3 bg-brand-gold text-stone-900 font-bold rounded hover:bg-yellow-500 transition-colors disabled:opacity-70 flex justify-center items-center"
                   >
-                    Back to standard login
+                    {loading ? (
+                      <span className="w-5 h-5 border-2 border-stone-900/30 border-t-stone-900 rounded-full animate-spin"></span>
+                    ) : "Send Reset Link"}
                   </button>
-                </>
-             ) : (
-                <div className="text-center py-4">
-                   <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                      </svg>
-                   </div>
-                   <h3 className="text-xl font-serif text-stone-900 mb-2">Subscription Found</h3>
-                   <p className="text-stone-600 mb-6 text-sm">
-                     We successfully located your payment record for <span className="font-bold text-stone-900">{email}</span>.
-                   </p>
-                   <div className="bg-stone-50 p-4 rounded border border-stone-200 mb-6">
-                     <p className="text-xs text-stone-500">
-                       An instant login link has been sent to your inbox. Please check your spam folder.
-                     </p>
-                   </div>
-                   <button 
-                      onClick={() => { setRecoverySuccess(false); setView('login'); setEmail(''); setValidationError(null); }}
-                      className="w-full py-3 border border-stone-300 text-stone-900 font-medium rounded hover:bg-stone-50 transition-colors"
-                   >
-                      Return to Login
-                   </button>
+                </form>
+
+                <button
+                  onClick={() => switchView('login')}
+                  className="w-full mt-4 text-xs text-stone-400 hover:text-stone-900"
+                >
+                  Back to sign in
+                </button>
+              </>
+            ) : (
+              <div className="text-center py-4">
+                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
                 </div>
-             )}
+                <h3 className="text-xl font-serif text-stone-900 mb-2">Check Your Email</h3>
+                <p className="text-stone-600 mb-6 text-sm">
+                  We've sent a password reset link to <span className="font-bold text-stone-900">{email}</span>
+                </p>
+                <div className="bg-stone-50 p-4 rounded border border-stone-200 mb-6">
+                  <p className="text-xs text-stone-500">
+                    The link will expire in 1 hour. Please check your spam folder if you don't see it.
+                  </p>
+                </div>
+                <button
+                  onClick={() => switchView('login')}
+                  className="w-full py-3 border border-stone-300 text-stone-900 font-medium rounded hover:bg-stone-50 transition-colors"
+                >
+                  Return to Sign In
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
