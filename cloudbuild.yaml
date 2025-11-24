@@ -33,5 +33,9 @@ steps:
 images:
   - 'us-west1-docker.pkg.dev/$PROJECT_ID/the-biblical-man/app:$COMMIT_SHA'
 
+# Default substitution variables (can be overridden in trigger settings)
+substitutions:
+  _GEMINI_API_KEY: 'AIzaSyCmb1G6GXtiA5dRE6Szfez5DUUmaiejchw'
+
 options:
   logging: CLOUD_LOGGING_ONLY
