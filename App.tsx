@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import Layout from './components/Layout';
 import Hero from './components/Hero';
@@ -14,6 +15,7 @@ import SEO from './components/SEO';
 import { NavSection, BlogPost } from './types';
 import { BLOG_POSTS, PRODUCTS } from './constants';
 import { fetchLatestPosts } from './services/rssService';
+import { authService } from './services/authService';
 
 const App: React.FC = () => {
   const [activeSection, setActiveSection] = useState<NavSection>(NavSection.HOME);
@@ -33,6 +35,14 @@ const App: React.FC = () => {
   const writingsRef = useRef<HTMLDivElement>(null);
   const productsRef = useRef<HTMLDivElement>(null);
   const membersRef = useRef<HTMLDivElement>(null);
+
+  // Check auth status on load
+  useEffect(() => {
+    const user = authService.getCurrentUser();
+    if (user) {
+      setIsLoggedIn(true);
+    }
+  }, []);
 
   // Fetch RSS posts
   useEffect(() => {
@@ -80,6 +90,7 @@ const App: React.FC = () => {
   };
 
   const handleLogout = () => {
+    authService.logout();
     setIsLoggedIn(false);
     setActiveSection(NavSection.HOME);
     scrollToSection(NavSection.HOME);

@@ -1,5 +1,6 @@
 
 
+
 export interface BlogPost {
   id: string;
   title: string;
@@ -73,4 +74,17 @@ export interface BusinessInsight {
   keyObservation: string;
   strategicAction: string;
   churnRiskAssessment: string;
+}
+
+export interface WarPhase {
+  name: string;
+  tactic: string;
+  scriptureAmmo: string;
+}
+
+export interface WarPlan {
+  title: string;
+  phase1: WarPhase;
+  phase2: WarPhase;
+  phase3: WarPhase;
 }

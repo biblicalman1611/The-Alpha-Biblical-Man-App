@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { NavSection } from '../types';
 import RadioPlayer from './RadioPlayer';
+import ChatBot from './ChatBot';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -182,6 +184,9 @@ const Layout: React.FC<LayoutProps> = ({
 
       {/* Global Radio Player */}
       <RadioPlayer />
+      
+      {/* AI Chat Bot */}
+      <ChatBot />
 
       <footer className="bg-stone-900 text-stone-400 py-16">
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">

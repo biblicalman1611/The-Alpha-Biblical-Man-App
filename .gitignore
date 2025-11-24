@@ -11,21 +11,6 @@ node_modules
 dist
 dist-ssr
 *.local
-.next
-out
-build
-
-# Environment variables and secrets
-.env
-.env.local
-.env.migration
-.env.production
-.env.*.local
-
-# Firebase Admin credentials
-firebase-admin-key.json
-*-key.json
-service-account.json
 
 # Editor directories and files
 .vscode/*

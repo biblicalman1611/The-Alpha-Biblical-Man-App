@@ -1,5 +1,7 @@
+
+
 import React, { useState, useRef, useEffect } from 'react';
-import { getScriptureInsight, generateScriptureAudio } from '../services/geminiService';
+import { getScriptureInsight, generateScriptureAudio, generateVerseImage } from '../services/geminiService';
 import { ScriptureResponse } from '../types';
 
 // --- Audio Utilities ---
@@ -43,6 +45,10 @@ const ScriptureTool: React.FC = () => {
   const [playingAudio, setPlayingAudio] = useState<'verse' | 'lesson' | null>(null);
   const [loadingAudio, setLoadingAudio] = useState<'verse' | 'lesson' | null>(null);
   
+  // Image State
+  const [visualizing, setVisualizing] = useState(false);
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceRef = useRef<AudioBufferSourceNode | null>(null);
   
@@ -57,7 +63,7 @@ const ScriptureTool: React.FC = () => {
     };
   }, []);
 
-  // Reset audio when result changes
+  // Reset audio and image when result changes
   useEffect(() => {
     if (sourceRef.current) {
       sourceRef.current.stop();
@@ -65,6 +71,7 @@ const ScriptureTool: React.FC = () => {
     }
     setPlayingAudio(null);
     setCopiedLesson(false);
+    setGeneratedImage(null);
   }, [result]);
 
   const performSearch = async (searchTopic: string) => {
@@ -112,6 +119,16 @@ const ScriptureTool: React.FC = () => {
     } catch (err) {
       console.error('Failed to copy text: ', err);
     }
+  };
+  
+  const handleVisualize = async () => {
+    if (!result) return;
+    setVisualizing(true);
+    const img = await generateVerseImage(result.verse, result.reference);
+    if (img) {
+      setGeneratedImage(img);
+    }
+    setVisualizing(false);
   };
 
   const handleAudioToggle = async (type: 'verse' | 'lesson', text: string) => {
@@ -232,14 +249,66 @@ const ScriptureTool: React.FC = () => {
           </div>
         )}
 
+        {/* Loading Skeleton */}
+        {loading && !result && (
+          <div className="mt-12 fade-in grid grid-cols-1 md:grid-cols-2 gap-6 animate-pulse">
+            <div className="md:col-span-2 bg-stone-50 p-8 md:p-10 rounded-2xl border border-stone-200 shadow-sm h-72 flex flex-col justify-center items-center gap-4">
+              <div className="w-24 h-4 bg-stone-200 rounded-full"></div>
+              <div className="w-3/4 h-12 bg-stone-200 rounded"></div>
+              <div className="w-1/2 h-6 bg-stone-200 rounded"></div>
+            </div>
+            <div className="bg-white p-8 rounded-2xl border border-stone-100 shadow-sm h-48 flex flex-col gap-4">
+              <div className="w-20 h-3 bg-stone-200 rounded-full"></div>
+              <div className="w-full h-24 bg-stone-100 rounded"></div>
+            </div>
+            <div className="bg-stone-900 p-8 rounded-2xl border border-stone-800 shadow-xl h-48 flex flex-col gap-4">
+               <div className="w-20 h-3 bg-stone-700 rounded-full"></div>
+               <div className="w-full h-24 bg-stone-800 rounded"></div>
+            </div>
+          </div>
+        )}
+
         {result && (
           <div className="mt-12 fade-in grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Card 1: The Verse - Wide Card */}
-            <div className="md:col-span-2 bg-stone-50 p-8 md:p-10 rounded-2xl border border-stone-200 shadow-sm relative">
+            <div className="md:col-span-2 bg-stone-50 p-8 md:p-10 rounded-2xl border border-stone-200 shadow-sm relative group">
               <div className="flex justify-between items-center mb-6">
                  <span className="text-xs font-bold tracking-widest text-stone-400 uppercase">Scripture (KJV)</span>
+                 {!generatedImage && (
+                    <button 
+                      onClick={handleVisualize}
+                      disabled={visualizing}
+                      className="text-xs font-bold uppercase tracking-widest text-brand-gold hover:text-stone-900 transition-colors flex items-center gap-1 disabled:opacity-50"
+                    >
+                      {visualizing ? (
+                        <>
+                          <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                          Painting...
+                        </>
+                      ) : (
+                        <>
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
+                            <path fillRule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0021 18v-1.94l-2.69-2.689a1.5 1.5 0 00-2.12 0l-.88.879.97.97a.75.75 0 11-1.06 1.06l-5.16-5.159a1.5 1.5 0 00-2.12 0L3 16.061zm10.125-7.81a1.125 1.125 0 112.25 0 1.125 1.125 0 01-2.25 0z" clipRule="evenodd" />
+                          </svg>
+                          Visio Divina
+                        </>
+                      )}
+                    </button>
+                 )}
               </div>
               
+              {generatedImage && (
+                <div className="mb-8 w-full relative animate-fadeIn">
+                   <div className="absolute inset-0 bg-black/10 pointer-events-none rounded-sm ring-1 ring-inset ring-black/20"></div>
+                   <div className="p-4 bg-stone-200 shadow-inner rounded-sm">
+                      <div className="p-2 bg-white shadow-xl">
+                        <img src={generatedImage} alt="Visio Divina" className="w-full h-auto object-cover grayscale-[20%] sepia-[15%] contrast-125" />
+                      </div>
+                   </div>
+                   <div className="mt-2 text-center text-[10px] uppercase tracking-widest text-stone-400">Generative Oil Interpretation</div>
+                </div>
+              )}
+
               <p className="text-3xl md:text-5xl font-serif text-stone-800 mb-8 leading-relaxed tracking-wider text-center px-4 md:px-12 italic">
                 "{result.verse}"
               </p>

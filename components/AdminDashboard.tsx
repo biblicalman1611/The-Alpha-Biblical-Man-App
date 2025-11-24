@@ -110,6 +110,9 @@ const AdminDashboard: React.FC = () => {
                  <p className="text-red-700 text-sm mt-1">
                     {STUCK_USERS.length} paid users have not completed onboarding. This matches the Resend API failure logs.
                  </p>
+                 <p className="text-red-600/70 text-xs mt-2 italic">
+                    Note: Users can self-resolve this using the "Paid $3" link on the Login screen.
+                 </p>
               </div>
               <button 
                 onClick={handleBroadcastFix}

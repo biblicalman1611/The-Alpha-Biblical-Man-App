@@ -1,227 +1,108 @@
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  sendPasswordResetEmail,
-  updateProfile,
-  User,
-  onAuthStateChanged
-} from 'firebase/auth';
-import {
-  doc,
-  setDoc,
-  getDoc,
-  updateDoc,
-  serverTimestamp
-} from 'firebase/firestore';
-import { auth, db } from '../config/firebase';
+
 import { MemberProfile } from '../types';
 
-export interface AuthUser {
-  uid: string;
-  email: string | null;
-  displayName: string | null;
-  profile: MemberProfile | null;
+// Keys for LocalStorage
+const USERS_KEY = 'biblical_man_users';
+const CURRENT_USER_KEY = 'biblical_man_current_user';
+
+export interface User {
+  id: string;
+  email: string;
+  passwordHash: string; // In a real app, this would be a secure hash
+  name: string;
+  profile: MemberProfile;
 }
 
-/**
- * Register a new user with email and password
- * Creates user authentication and initializes their profile in Firestore
- */
-export const registerUser = async (
-  email: string,
-  password: string,
-  name: string
-): Promise<AuthUser> => {
-  try {
-    // Create user with email/password (Firebase handles encryption automatically)
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+const DEFAULT_PROFILE_IMG = "https://picsum.photos/seed/disciple/200/200?grayscale";
 
-    // Update the user's display name
-    await updateProfile(user, { displayName: name });
-
-    // Create initial profile in Firestore
-    const profileData: MemberProfile = {
-      name: name,
-      location: '',
-      joinDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-      imageUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=292524&color=d4af37&size=200`,
-      bio: 'New member of The Biblical Man community.',
-    };
-
-    await setDoc(doc(db, 'users', user.uid), {
-      ...profileData,
-      email: user.email,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      currentDay: 1,
-      subscriptionStatus: 'active',
-    });
-
-    return {
-      uid: user.uid,
-      email: user.email,
-      displayName: user.displayName,
-      profile: profileData,
-    };
-  } catch (error: any) {
-    console.error('Registration error:', error);
-    throw new Error(getAuthErrorMessage(error.code));
-  }
+// Helper to get all users
+const getUsers = (): Record<string, User> => {
+  const usersStr = localStorage.getItem(USERS_KEY);
+  return usersStr ? JSON.parse(usersStr) : {};
 };
 
-/**
- * Sign in existing user with email and password
- */
-export const loginUser = async (
-  email: string,
-  password: string
-): Promise<AuthUser> => {
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    // Fetch user profile from Firestore
-    const profile = await getUserProfile(user.uid);
-
-    return {
-      uid: user.uid,
-      email: user.email,
-      displayName: user.displayName,
-      profile: profile,
-    };
-  } catch (error: any) {
-    console.error('Login error:', error);
-    throw new Error(getAuthErrorMessage(error.code));
-  }
+// Helper to save users
+const saveUsers = (users: Record<string, User>) => {
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
 };
 
-/**
- * Sign out current user
- */
-export const logoutUser = async (): Promise<void> => {
-  try {
-    await signOut(auth);
-  } catch (error) {
-    console.error('Logout error:', error);
-    throw new Error('Failed to sign out');
-  }
-};
+export const authService = {
+  // Register a new user
+  register: async (email: string, password: string, name: string): Promise<User> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 800));
 
-/**
- * Send password reset email
- */
-export const resetPassword = async (email: string): Promise<void> => {
-  try {
-    await sendPasswordResetEmail(auth, email);
-  } catch (error: any) {
-    console.error('Password reset error:', error);
-    throw new Error(getAuthErrorMessage(error.code));
-  }
-};
-
-/**
- * Get user profile from Firestore
- */
-export const getUserProfile = async (uid: string): Promise<MemberProfile | null> => {
-  try {
-    const docRef = doc(db, 'users', uid);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      return {
-        name: data.name || '',
-        location: data.location || '',
-        joinDate: data.joinDate || '',
-        imageUrl: data.imageUrl || '',
-        bio: data.bio || '',
-      };
+    const users = getUsers();
+    if (users[email]) {
+      throw new Error("Account already exists with this email.");
     }
-    return null;
-  } catch (error) {
-    console.error('Error fetching profile:', error);
-    return null;
+
+    const newUser: User = {
+      id: crypto.randomUUID(),
+      email,
+      passwordHash: btoa(password), // Simple encoding for demo (NOT secure for production)
+      name,
+      profile: {
+        name: name,
+        location: "Unknown Location",
+        joinDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+        imageUrl: DEFAULT_PROFILE_IMG,
+        bio: "New member of the congregation. Walking the path."
+      }
+    };
+
+    users[email] = newUser;
+    saveUsers(users);
+    
+    // Auto login
+    localStorage.setItem(CURRENT_USER_KEY, email);
+    return newUser;
+  },
+
+  // Login existing user
+  login: async (email: string, password: string): Promise<User> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    const users = getUsers();
+    const user = users[email];
+
+    if (!user || user.passwordHash !== btoa(password)) {
+      throw new Error("Invalid credentials.");
+    }
+
+    localStorage.setItem(CURRENT_USER_KEY, email);
+    return user;
+  },
+
+  // Logout
+  logout: () => {
+    localStorage.removeItem(CURRENT_USER_KEY);
+  },
+
+  // Get currently logged in user
+  getCurrentUser: (): User | null => {
+    const email = localStorage.getItem(CURRENT_USER_KEY);
+    if (!email) return null;
+    
+    const users = getUsers();
+    return users[email] || null;
+  },
+
+  // Update user profile
+  updateProfile: async (updatedProfile: MemberProfile): Promise<User> => {
+    const email = localStorage.getItem(CURRENT_USER_KEY);
+    if (!email) throw new Error("Not logged in");
+
+    const users = getUsers();
+    const user = users[email];
+    
+    if (!user) throw new Error("User not found");
+
+    const updatedUser = { ...user, profile: updatedProfile };
+    users[email] = updatedUser;
+    saveUsers(users);
+    
+    return updatedUser;
   }
 };
-
-/**
- * Update user profile in Firestore
- */
-export const updateUserProfile = async (
-  uid: string,
-  profileData: Partial<MemberProfile>
-): Promise<void> => {
-  try {
-    const docRef = doc(db, 'users', uid);
-    await updateDoc(docRef, {
-      ...profileData,
-      updatedAt: serverTimestamp(),
-    });
-  } catch (error) {
-    console.error('Error updating profile:', error);
-    throw new Error('Failed to update profile');
-  }
-};
-
-/**
- * Update user's current day progress
- */
-export const updateUserProgress = async (
-  uid: string,
-  currentDay: number
-): Promise<void> => {
-  try {
-    const docRef = doc(db, 'users', uid);
-    await updateDoc(docRef, {
-      currentDay: currentDay,
-      updatedAt: serverTimestamp(),
-    });
-  } catch (error) {
-    console.error('Error updating progress:', error);
-    throw new Error('Failed to update progress');
-  }
-};
-
-/**
- * Listen to authentication state changes
- */
-export const onAuthChange = (callback: (user: User | null) => void): (() => void) => {
-  return onAuthStateChanged(auth, callback);
-};
-
-/**
- * Get current authenticated user
- */
-export const getCurrentUser = (): User | null => {
-  return auth.currentUser;
-};
-
-/**
- * Convert Firebase auth error codes to user-friendly messages
- */
-function getAuthErrorMessage(code: string): string {
-  switch (code) {
-    case 'auth/email-already-in-use':
-      return 'This email is already registered. Please sign in instead.';
-    case 'auth/invalid-email':
-      return 'Invalid email address format.';
-    case 'auth/operation-not-allowed':
-      return 'Email/password accounts are not enabled. Please contact support.';
-    case 'auth/weak-password':
-      return 'Password is too weak. Please use at least 6 characters.';
-    case 'auth/user-disabled':
-      return 'This account has been disabled. Please contact support.';
-    case 'auth/user-not-found':
-      return 'No account found with this email. Please sign up first.';
-    case 'auth/wrong-password':
-      return 'Incorrect password. Please try again.';
-    case 'auth/invalid-credential':
-      return 'Invalid email or password. Please try again.';
-    case 'auth/too-many-requests':
-      return 'Too many failed attempts. Please try again later.';
-    default:
-      return 'An error occurred. Please try again.';
-  }
-}

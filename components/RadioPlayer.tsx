@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 
 // Final Fight Bible Radio (RadioBOSS Stream)
 const STREAM_URL = "https://c13.radioboss.fm:8639/stream";
+const STATUS_URL = "https://c13.radioboss.fm:8639/status-json.xsl";
 const EXTERNAL_STREAM_URL = "https://www.finalfightbibleradio.com";
 
 const RadioPlayer: React.FC = () => {
@@ -9,11 +10,66 @@ const RadioPlayer: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [currentTrack, setCurrentTrack] = useState<string>('');
   
   // Use a key to force re-render of audio element on error retry
   const [audioKey, setAudioKey] = useState(0);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Poll for Metadata (Now Playing)
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchMetadata = async () => {
+      try {
+        const response = await fetch(STATUS_URL);
+        if (response.ok && isMounted) {
+          // Check if response is actually JSON before parsing to prevent crashes
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.indexOf("application/json") !== -1) {
+             const data = await response.json();
+             // Icecast JSON structure
+             const source = data?.icestats?.source;
+             let title = '';
+
+             if (Array.isArray(source)) {
+               title = source[0]?.title;
+             } else if (source) {
+               title = source.title;
+             }
+
+             if (title && typeof title === 'string' && title.trim() !== '') {
+               setCurrentTrack(title);
+             }
+          } else {
+            // Fallback: try parsing text if header is missing/wrong but content is json
+            const text = await response.text();
+            try {
+               const data = JSON.parse(text);
+               const source = data?.icestats?.source;
+               let title = Array.isArray(source) ? source[0]?.title : source?.title;
+               if (title && typeof title === 'string') setCurrentTrack(title);
+            } catch (e) {
+               // Not JSON, ignore
+            }
+          }
+        }
+      } catch (error) {
+        // Silent fail for CORS or network issues
+      }
+    };
+
+    // Fetch immediately
+    fetchMetadata();
+    
+    // Poll every 15 seconds
+    const interval = setInterval(fetchMetadata, 15000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -78,12 +134,9 @@ const RadioPlayer: React.FC = () => {
       setIsLoading(true);
       setHasError(false);
       
-      // If we had an error previously, force a fresh element next time (optional, but good for clearing bad state)
+      // If we had an error previously, force a fresh element next time
       if (hasError) {
          setAudioKey(prev => prev + 1);
-         // Wait for render cycle to pick up new ref? 
-         // Actually, with React state update, we need to wait. 
-         // Better strategy: Just set src with cache buster.
       }
 
       try {
@@ -127,42 +180,49 @@ const RadioPlayer: React.FC = () => {
         key={audioKey}
         ref={audioRef}
         preload="none"
-        crossOrigin="anonymous" // Attempt anonymously first
       />
 
       {/* Expanded Control Panel */}
       <div 
-        className={`bg-stone-900 text-stone-100 rounded-l-full h-12 flex items-center overflow-hidden transition-all duration-300 shadow-xl border border-stone-800 ${
-          isExpanded ? 'w-auto max-w-[280px] pl-5 pr-4 opacity-100' : 'w-0 pl-0 pr-0 opacity-0'
+        className={`bg-stone-900 text-stone-100 rounded-l-xl h-auto min-h-[56px] flex items-center overflow-hidden transition-all duration-300 shadow-xl border border-stone-800 ${
+          isExpanded ? 'w-auto max-w-[280px] pl-5 pr-4 py-2 opacity-100' : 'w-0 pl-0 pr-0 opacity-0'
         }`}
       >
-        <div className="flex flex-col min-w-[160px] whitespace-nowrap">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-brand-gold flex items-center gap-1.5">
+        <div className="flex flex-col min-w-[180px]">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-brand-gold flex items-center gap-1.5 mb-1">
             {hasError ? (
                <span className="text-red-400">Stream Blocked</span>
             ) : isPlaying ? (
                <>
-                 <span className="relative flex h-2 w-2">
+                 <span className="relative flex h-2 w-2 shrink-0">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                 </span>
-                Live Air
+                Final Fight Bible Radio
                </>
             ) : (
-              'Final Fight Radio'
+              'Final Fight Bible Radio'
             )}
           </span>
           
-          <div className="text-xs font-serif text-stone-400 flex items-center gap-2">
+          <div className="text-xs font-serif text-stone-300 w-full leading-tight">
             {hasError ? (
                <button 
                 onClick={openExternalPlayer}
-                className="underline hover:text-white text-stone-300 font-bold"
+                className="underline hover:text-white text-stone-400 font-bold"
                >
                  Launch External Player &rarr;
                </button>
+            ) : isLoading ? (
+               <span className="italic text-stone-500">Connecting to live feed...</span>
             ) : (
-               <span>{isLoading ? 'Connecting...' : isPlaying ? 'Broadcasting Truth' : 'Click to Listen'}</span>
+               <div title={currentTrack || "Live Stream"}>
+                  {currentTrack ? (
+                    <span className="text-white block">{currentTrack}</span>
+                  ) : (
+                    <span className="text-stone-500">Live 24/7 Broadcast</span>
+                  )}
+               </div>
             )}
           </div>
         </div>
@@ -171,7 +231,7 @@ const RadioPlayer: React.FC = () => {
       {/* Play/Toggle Button */}
       <button 
         onClick={togglePlay}
-        className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 border-2 relative z-10 ${
+        className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 border-2 relative z-10 shrink-0 ${
           hasError
             ? 'bg-stone-800 border-red-900 text-red-500'
             : isPlaying 
