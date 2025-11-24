@@ -43,14 +43,24 @@ const ProductSection: React.FC<ProductSectionProps> = ({ products }) => {
                 </p>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
                   <span className="text-2xl font-light text-white">{featuredProduct.price}</span>
-                  <a 
-                    href={featuredProduct.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-8 py-3 bg-white text-stone-900 font-bold rounded hover:bg-stone-200 transition-colors uppercase text-sm tracking-widest text-center w-full sm:w-auto"
-                  >
-                    {featuredProduct.cta}
-                  </a>
+                  <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                    <a 
+                      href={featuredProduct.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-8 py-3 bg-white text-stone-900 font-bold rounded hover:bg-stone-200 transition-colors uppercase text-sm tracking-widest text-center w-full sm:w-auto"
+                    >
+                      {featuredProduct.cta}
+                    </a>
+                    <a 
+                      href={featuredProduct.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-8 py-3 bg-transparent border border-brand-gold text-brand-gold font-bold rounded hover:bg-brand-gold hover:text-stone-900 transition-colors uppercase text-sm tracking-widest text-center w-full sm:w-auto"
+                    >
+                      Buy Now
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>

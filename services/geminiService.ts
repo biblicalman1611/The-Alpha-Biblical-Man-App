@@ -1,8 +1,8 @@
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { ScriptureResponse, ArticleInsight, BusinessInsight } from '../types';
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
-// Initialize conditionally to prevent crashes if key is missing during dev,
+const apiKey = process.env.API_KEY || '';
+// Initialize conditionally to prevent crashes if key is missing during dev, 
 // though per instructions we assume it's there.
 const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
