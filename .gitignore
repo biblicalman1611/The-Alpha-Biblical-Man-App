@@ -15,6 +15,18 @@ dist-ssr
 out
 build
 
+# Environment variables and secrets
+.env
+.env.local
+.env.migration
+.env.production
+.env.*.local
+
+# Firebase Admin credentials
+firebase-admin-key.json
+*-key.json
+service-account.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
