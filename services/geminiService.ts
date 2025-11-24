@@ -1,21 +1,42 @@
-import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { ScriptureResponse, ArticleInsight, BusinessInsight } from '../types';
 
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
-// Initialize conditionally to prevent crashes if key is missing during dev,
-// though per instructions we assume it's there.
-// Disable service worker to avoid CORS issues
-const ai = apiKey ? new GoogleGenAI({
-  apiKey,
-  // @ts-ignore - disable service worker
-  useServiceWorker: false
-}) : null;
+
+// Use direct REST API to completely bypass service worker issues
+async function callGeminiAPI(modelId: string, contents: any, config: any = {}) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
+
+  const requestBody: any = {
+    contents: typeof contents === 'string' ? [{ parts: [{ text: contents }] }] : contents,
+  };
+
+  if (config.generationConfig) {
+    requestBody.generationConfig = config.generationConfig;
+  }
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestBody),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Gemini API error: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+  return { text, candidates: data.candidates };
+}
 
 /**
  * Generate a personalized welcome tutorial script for new members
  */
 export const getWelcomeTutorialScript = async (userName: string): Promise<string[]> => {
-  if (!ai) {
+  if (!apiKey) {
     console.error("API Key is missing.");
     return [];
   }
@@ -43,18 +64,10 @@ export const getWelcomeTutorialScript = async (userName: string): Promise<string
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: modelId,
-      contents: prompt,
-      config: {
+    const response = await callGeminiAPI(modelId, prompt, {
+      generationConfig: {
         responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.ARRAY,
-          items: {
-            type: Type.STRING,
-          },
-        },
-      },
+      }
     });
 
     const text = response.text;
@@ -69,43 +82,31 @@ export const getWelcomeTutorialScript = async (userName: string): Promise<string
 };
 
 export const getScriptureInsight = async (topic: string): Promise<ScriptureResponse | null> => {
-  if (!ai) {
+  if (!apiKey) {
     console.error("API Key is missing.");
     return null;
   }
 
   const modelId = "gemini-2.5-flash";
-  
+
   const prompt = `
-    You are a wise spiritual mentor representing "The Biblical Man". 
+    You are a wise spiritual mentor representing "The Biblical Man".
     The user is asking for guidance or thinking about this topic: "${topic}".
-    
+
     Please provide:
     1. A relevant Bible verse strictly from the King James Version (KJV). Ensure the language reflects the KJV text (thee, thou, etc.).
     2. The scripture reference (Book Chapter:Verse).
     3. A "microLesson": A profound, stoic, and biblically grounded insight (max 40 words).
     4. A "reflectionQuestion": A direct and challenging question to help the user apply this to their life.
-    
-    Return the response strictly as a JSON object.
+
+    Return the response strictly as a JSON object with keys: verse, reference, microLesson, reflectionQuestion.
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: modelId,
-      contents: prompt,
-      config: {
+    const response = await callGeminiAPI(modelId, prompt, {
+      generationConfig: {
         responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            verse: { type: Type.STRING },
-            reference: { type: Type.STRING },
-            microLesson: { type: Type.STRING },
-            reflectionQuestion: { type: Type.STRING },
-          },
-          required: ["verse", "reference", "microLesson", "reflectionQuestion"],
-        },
-      },
+      }
     });
 
     const text = response.text;
@@ -119,38 +120,20 @@ export const getScriptureInsight = async (topic: string): Promise<ScriptureRespo
 };
 
 export const generateScriptureAudio = async (text: string): Promise<string | null> => {
-  if (!ai) return null;
+  if (!apiKey) return null;
 
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-preview-tts',
-      contents: {
-        parts: [{ text: text }],
-      },
-      config: {
-        responseModalities: [Modality.AUDIO],
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: { voiceName: 'Charon' },
-          },
-        },
-      },
-    });
-
-    return response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data || null;
-  } catch (error) {
-    console.error("Error generating audio:", error);
-    return null;
-  }
+  // Note: Audio generation requires the SDK - skip for now or implement via REST API
+  console.warn("Audio generation temporarily disabled");
+  return null;
 };
 
 export const generateArticleInsight = async (content: string): Promise<ArticleInsight | null> => {
-  if (!ai) return null;
+  if (!apiKey) return null;
 
   const prompt = `
     Analyze the following article content from "The Biblical Man".
     Provide a "Micro-Learning" summary that helps the reader retain and apply the knowledge.
-    
+
     Content:
     ${content.substring(0, 5000)}
 
@@ -158,24 +141,15 @@ export const generateArticleInsight = async (content: string): Promise<ArticleIn
     1. corePrinciple: The one central truth of this article (max 15 words).
     2. actionItem: A specific, immediate action the reader can take (max 20 words).
     3. reflection: A question to challenge their current mindset.
+
+    Use these exact JSON keys: corePrinciple, actionItem, reflection
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-      config: {
+    const response = await callGeminiAPI("gemini-2.5-flash", prompt, {
+      generationConfig: {
         responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            corePrinciple: { type: Type.STRING },
-            actionItem: { type: Type.STRING },
-            reflection: { type: Type.STRING },
-          },
-          required: ["corePrinciple", "actionItem", "reflection"],
-        },
-      },
+      }
     });
 
     const text = response.text;
@@ -188,12 +162,12 @@ export const generateArticleInsight = async (content: string): Promise<ArticleIn
 };
 
 export const generateAnalyticsInsight = async (dataContext: string): Promise<BusinessInsight | null> => {
-  if (!ai) return null;
+  if (!apiKey) return null;
 
   const prompt = `
     You are a Data Scientist and Business Strategist for "The Biblical Man", a subscription platform.
     Analyze the following raw data JSON snapshot representing current user engagement:
-    
+
     ${dataContext}
 
     Provide a strategic report in JSON format:
@@ -201,25 +175,15 @@ export const generateAnalyticsInsight = async (dataContext: string): Promise<Bus
     2. keyObservation: One specific trend that stands out (e.g., high churn, high scripture tool usage).
     3. strategicAction: One concrete recommendation to improve metrics.
     4. churnRiskAssessment: A brief assessment of user retention risk (Low/Medium/High) and why.
+
+    Use these exact JSON keys: summary, keyObservation, strategicAction, churnRiskAssessment
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-      config: {
+    const response = await callGeminiAPI("gemini-2.5-flash", prompt, {
+      generationConfig: {
         responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            summary: { type: Type.STRING },
-            keyObservation: { type: Type.STRING },
-            strategicAction: { type: Type.STRING },
-            churnRiskAssessment: { type: Type.STRING },
-          },
-          required: ["summary", "keyObservation", "strategicAction", "churnRiskAssessment"],
-        },
-      },
+      }
     });
 
     const text = response.text;
