@@ -21,6 +21,9 @@ RUN npm install
 # Copy source code (note: .env is excluded via .dockerignore)
 COPY . .
 
+# Delete any .env files that might have been copied (safety measure)
+RUN rm -f .env .env.local .env.*.local
+
 # Set environment variables from build args
 ENV VITE_GEMINI_API_KEY=$VITE_GEMINI_API_KEY
 ENV VITE_FIREBASE_API_KEY=$VITE_FIREBASE_API_KEY
