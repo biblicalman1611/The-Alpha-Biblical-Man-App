@@ -9,6 +9,10 @@ const ProductSection: React.FC<ProductSectionProps> = ({ products }) => {
   const featuredProduct = products.find(p => p.isFeatured);
   const otherProducts = products.filter(p => !p.isFeatured);
 
+  const handleTrackClick = (productName: string) => {
+    console.log(`[Analytics] Event: 'buy_now_click' | Product: '${productName}' | Section: 'Products'`);
+  };
+
   return (
     <div className="py-24 bg-stone-100 border-t border-stone-200">
       <div className="max-w-6xl mx-auto px-4">
@@ -48,6 +52,7 @@ const ProductSection: React.FC<ProductSectionProps> = ({ products }) => {
                       href={featuredProduct.link}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => handleTrackClick(featuredProduct.name)}
                       className="px-8 py-3 bg-white text-stone-900 font-bold rounded hover:bg-stone-200 transition-colors uppercase text-sm tracking-widest text-center w-full sm:w-auto"
                     >
                       {featuredProduct.cta}
@@ -56,6 +61,7 @@ const ProductSection: React.FC<ProductSectionProps> = ({ products }) => {
                       href={featuredProduct.link}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => handleTrackClick(featuredProduct.name)}
                       className="px-8 py-3 bg-transparent border border-brand-gold text-brand-gold font-bold rounded hover:bg-brand-gold hover:text-stone-900 transition-colors uppercase text-sm tracking-widest text-center w-full sm:w-auto"
                     >
                       Buy Now
@@ -94,6 +100,7 @@ const ProductSection: React.FC<ProductSectionProps> = ({ products }) => {
                     href={product.link}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => handleTrackClick(product.name)}
                     className="flex items-center gap-2 text-stone-900 font-bold uppercase text-xs tracking-wider hover:text-brand-gold transition-colors"
                   >
                     {product.cta} &rarr;
