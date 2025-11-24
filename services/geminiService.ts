@@ -4,7 +4,12 @@ import { ScriptureResponse, ArticleInsight, BusinessInsight } from '../types';
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
 // Initialize conditionally to prevent crashes if key is missing during dev,
 // though per instructions we assume it's there.
-const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
+// Disable service worker to avoid CORS issues
+const ai = apiKey ? new GoogleGenAI({
+  apiKey,
+  // @ts-ignore - disable service worker
+  useServiceWorker: false
+}) : null;
 
 /**
  * Generate a personalized welcome tutorial script for new members

@@ -264,17 +264,21 @@ async function migrateUser(
 }
 
 /**
- * Fetch all active Stripe subscriptions
+ * Fetch all active $3.00 Stripe subscriptions
  */
 async function fetchActiveSubscriptions(): Promise<Array<{ customer: Stripe.Customer; subscription: Stripe.Subscription }>> {
-  console.log('📥 Fetching active subscriptions from Stripe...\n');
+  console.log('📥 Fetching active $3.00 subscriptions from Stripe...\n');
 
   const subscriptions: Array<{ customer: Stripe.Customer; subscription: Stripe.Subscription }> = [];
+  let totalCount = 0;
+  let threeDollarCount = 0;
 
   for await (const subscription of stripe.subscriptions.list({
     status: 'active',
     limit: 100,
   })) {
+    totalCount++;
+
     try {
       const customer = await stripe.customers.retrieve(subscription.customer as string);
 
@@ -282,13 +286,22 @@ async function fetchActiveSubscriptions(): Promise<Array<{ customer: Stripe.Cust
         continue;
       }
 
-      subscriptions.push({ customer, subscription });
+      // Get the price amount (in cents)
+      const amount = subscription.items.data[0]?.price?.unit_amount || 0;
+      const dollars = amount / 100;
+
+      // Only include $3.00 subscriptions
+      if (dollars === 3.00) {
+        threeDollarCount++;
+        subscriptions.push({ customer, subscription });
+      }
     } catch (error) {
       console.error(`Error fetching customer ${subscription.customer}:`, error);
     }
   }
 
-  console.log(`📊 Found ${subscriptions.length} active subscriptions\n`);
+  console.log(`📊 Total active subscriptions: ${totalCount}`);
+  console.log(`💵 $3.00 subscriptions found: ${subscriptions.length}\n`);
   return subscriptions;
 }
 

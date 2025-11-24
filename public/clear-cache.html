@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clearing Cache...</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            backdrop-filter: blur(10px);
+            max-width: 500px;
+        }
+        h1 { margin: 0 0 1rem 0; }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .status {
+            margin: 1rem 0;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .success { background: rgba(16, 185, 129, 0.3); }
+        .error { background: rgba(239, 68, 68, 0.3); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Fixing Scripture Tool</h1>
+        <div class="spinner" id="spinner"></div>
+        <div id="status">Clearing cache and service workers...</div>
+        <div id="messages"></div>
+    </div>
+
+    <script>
+        const statusEl = document.getElementById('status');
+        const messagesEl = document.getElementById('messages');
+        const spinner = document.getElementById('spinner');
+
+        function addMessage(msg, type = '') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = msg;
+            messagesEl.appendChild(div);
+        }
+
+        async function clearEverything() {
+            let completedSteps = 0;
+            const totalSteps = 4;
+
+            // Step 1: Unregister all service workers
+            try {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (let registration of registrations) {
+                    await registration.unregister();
+                    addMessage('✅ Service worker unregistered', 'success');
+                }
+                if (registrations.length === 0) {
+                    addMessage('✅ No service workers found', 'success');
+                }
+                completedSteps++;
+            } catch (error) {
+                addMessage('❌ Error unregistering service workers: ' + error.message, 'error');
+            }
+
+            // Step 2: Clear all caches
+            try {
+                const cacheNames = await caches.keys();
+                await Promise.all(cacheNames.map(name => caches.delete(name)));
+                addMessage(`✅ Cleared ${cacheNames.length} cache(s)`, 'success');
+                completedSteps++;
+            } catch (error) {
+                addMessage('❌ Error clearing caches: ' + error.message, 'error');
+            }
+
+            // Step 3: Clear localStorage and sessionStorage
+            try {
+                localStorage.clear();
+                sessionStorage.clear();
+                addMessage('✅ Cleared local storage', 'success');
+                completedSteps++;
+            } catch (error) {
+                addMessage('❌ Error clearing storage: ' + error.message, 'error');
+            }
+
+            // Step 4: Clear IndexedDB
+            try {
+                const databases = await indexedDB.databases();
+                for (const db of databases) {
+                    indexedDB.deleteDatabase(db.name);
+                }
+                addMessage('✅ Cleared IndexedDB', 'success');
+                completedSteps++;
+            } catch (error) {
+                addMessage('❌ Error clearing IndexedDB: ' + error.message, 'error');
+            }
+
+            // All done
+            spinner.style.display = 'none';
+            statusEl.textContent = `✅ Completed ${completedSteps}/${totalSteps} steps`;
+            statusEl.className = 'status success';
+
+            addMessage('🔄 Redirecting to home page in 3 seconds...', '');
+
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 3000);
+        }
+
+        // Run immediately
+        clearEverything();
+    </script>
+</body>
+</html>

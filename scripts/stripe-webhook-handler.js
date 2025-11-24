@@ -1,10 +1,6 @@
 /**
  * Stripe Webhook Handler for The Biblical Man App
- *
- * This Cloud Function handles Stripe payment events and creates user accounts
- * when subscriptions are successfully created.
- *
- * Deploy this to Google Cloud Functions or add to your existing server
+ * JavaScript version for Google Cloud Functions deployment
  */
 
 import Stripe from 'stripe';
@@ -17,32 +13,27 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2024-11-20.acacia',
 });
 
-// Initialize Firebase Admin (only if not already initialized)
-if (!initializeApp.length) {
-  initializeApp({
+// Initialize Firebase Admin
+let app;
+try {
+  app = initializeApp({
     credential: cert({
       projectId: process.env.FIREBASE_PROJECT_ID,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
       privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
     }),
   });
+} catch (error) {
+  console.log('Firebase app already initialized or error:', error.message);
 }
 
 const auth = getAuth();
 const db = getFirestore();
 
-interface StripeWebhookEvent {
-  id: string;
-  type: string;
-  data: {
-    object: any;
-  };
-}
-
 /**
- * Send welcome email to new user using Resend API
+ * Send welcome email using Resend API
  */
-async function sendWelcomeEmail(email: string, name: string, tempPassword: string) {
+async function sendWelcomeEmail(email, name, tempPassword) {
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
   if (!RESEND_API_KEY) {
@@ -73,7 +64,6 @@ async function sendWelcomeEmail(email: string, name: string, tempPassword: strin
               .content { padding: 40px 30px; color: #292524; line-height: 1.6; }
               .cta-button { display: inline-block; background: #1c1917; color: white; padding: 16px 32px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
               .credentials-box { background: #fafaf9; border: 2px solid #e7e5e4; border-radius: 6px; padding: 20px; margin: 20px 0; }
-              .credentials-box strong { color: #1c1917; }
               .footer { background: #fafaf9; padding: 20px; text-align: center; font-size: 12px; color: #78716c; }
             </style>
           </head>
@@ -144,9 +134,9 @@ async function sendWelcomeEmail(email: string, name: string, tempPassword: strin
 }
 
 /**
- * Generate a secure temporary password
+ * Generate secure temporary password
  */
-function generateTempPassword(): string {
+function generateTempPassword() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
   let password = '';
   for (let i = 0; i < 16; i++) {
@@ -156,11 +146,11 @@ function generateTempPassword(): string {
 }
 
 /**
- * Create user account in Firebase from Stripe subscription
+ * Create user account from subscription
  */
-async function createUserFromSubscription(subscription: Stripe.Subscription) {
+async function createUserFromSubscription(subscription) {
   try {
-    const customer = await stripe.customers.retrieve(subscription.customer as string);
+    const customer = await stripe.customers.retrieve(subscription.customer);
 
     if (customer.deleted) {
       throw new Error('Customer was deleted');
@@ -175,7 +165,6 @@ async function createUserFromSubscription(subscription: Stripe.Subscription) {
 
     console.log(`Creating user for: ${email}`);
 
-    // Generate temporary password
     const tempPassword = generateTempPassword();
 
     // Create Firebase user
@@ -183,7 +172,7 @@ async function createUserFromSubscription(subscription: Stripe.Subscription) {
       email,
       password: tempPassword,
       displayName: name,
-      emailVerified: true, // They verified via payment
+      emailVerified: true,
     });
 
     console.log(`Firebase user created: ${userRecord.uid}`);
@@ -204,11 +193,10 @@ async function createUserFromSubscription(subscription: Stripe.Subscription) {
 
     console.log(`User profile created in Firestore: ${userRecord.uid}`);
 
-    // Send welcome email with credentials
+    // Send welcome email
     const emailResult = await sendWelcomeEmail(email, name, tempPassword);
 
     if (!emailResult.success) {
-      // Log the user creation even if email fails
       await db.collection('failed_emails').add({
         email,
         name,
@@ -217,55 +205,49 @@ async function createUserFromSubscription(subscription: Stripe.Subscription) {
         error: emailResult.error,
         timestamp: new Date().toISOString(),
       });
-
       console.error(`Email failed for ${email}, stored in failed_emails collection`);
     }
 
     return { success: true, userId: userRecord.uid, email };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error creating user:', error);
-
-    // Log to failed_users collection
     await db.collection('failed_users').add({
       subscriptionId: subscription.id,
       customerId: subscription.customer,
       error: error.message,
       timestamp: new Date().toISOString(),
     });
-
     throw error;
   }
 }
 
 /**
- * Handle subscription.created event
+ * Handle subscription created
  */
-async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
+async function handleSubscriptionCreated(subscription) {
   console.log('Subscription created:', subscription.id);
 
-  // Get the subscription amount
   const amount = subscription.items.data[0]?.price?.unit_amount || 0;
   const dollars = amount / 100;
 
   console.log(`Subscription amount: $${dollars}`);
 
-  // Only create user for active $3.00 subscriptions
+  // Only create user for $3.00 subscriptions
   if ((subscription.status === 'active' || subscription.status === 'trialing') && dollars === 3.00) {
     await createUserFromSubscription(subscription);
   } else if (dollars !== 3.00) {
-    console.log(`Skipping user creation - not a $3.00 subscription (amount: $${dollars})`);
+    console.log(`Skipping - not a $3.00 subscription (amount: $${dollars})`);
   } else {
-    console.log(`Skipping user creation for subscription with status: ${subscription.status}`);
+    console.log(`Skipping - subscription status: ${subscription.status}`);
   }
 }
 
 /**
- * Handle subscription updates (renewal, cancellation, etc.)
+ * Handle subscription updated
  */
-async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
+async function handleSubscriptionUpdated(subscription) {
   console.log('Subscription updated:', subscription.id);
 
-  // Find user by subscriptionId
   const usersRef = db.collection('users');
   const snapshot = await usersRef.where('subscriptionId', '==', subscription.id).limit(1).get();
 
@@ -275,7 +257,6 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
       subscriptionStatus: subscription.status,
       updatedAt: new Date().toISOString(),
     });
-
     console.log(`Updated subscription status for user: ${userDoc.id}`);
   } else {
     console.log(`No user found for subscription: ${subscription.id}`);
@@ -283,9 +264,9 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 }
 
 /**
- * Handle subscription.deleted event (cancellation)
+ * Handle subscription deleted
  */
-async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
+async function handleSubscriptionDeleted(subscription) {
   console.log('Subscription deleted:', subscription.id);
 
   const usersRef = db.collection('users');
@@ -297,7 +278,6 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
       subscriptionStatus: 'cancelled',
       cancelledAt: new Date().toISOString(),
     });
-
     console.log(`Marked subscription as cancelled for user: ${userDoc.id}`);
   }
 }
@@ -305,7 +285,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 /**
  * Main webhook handler
  */
-export async function handleStripeWebhook(req: any, res: any) {
+export async function handleStripeWebhook(req, res) {
   const sig = req.headers['stripe-signature'];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -314,15 +294,15 @@ export async function handleStripeWebhook(req: any, res: any) {
     return res.status(500).json({ error: 'Webhook secret not configured' });
   }
 
-  let event: StripeWebhookEvent;
+  let event;
 
   try {
     event = stripe.webhooks.constructEvent(
-      req.body,
+      req.rawBody,
       sig,
       webhookSecret
-    ) as StripeWebhookEvent;
-  } catch (err: any) {
+    );
+  } catch (err) {
     console.error('Webhook signature verification failed:', err.message);
     return res.status(400).json({ error: `Webhook Error: ${err.message}` });
   }
@@ -332,15 +312,15 @@ export async function handleStripeWebhook(req: any, res: any) {
   try {
     switch (event.type) {
       case 'customer.subscription.created':
-        await handleSubscriptionCreated(event.data.object as Stripe.Subscription);
+        await handleSubscriptionCreated(event.data.object);
         break;
 
       case 'customer.subscription.updated':
-        await handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
+        await handleSubscriptionUpdated(event.data.object);
         break;
 
       case 'customer.subscription.deleted':
-        await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
+        await handleSubscriptionDeleted(event.data.object);
         break;
 
       default:
@@ -348,11 +328,8 @@ export async function handleStripeWebhook(req: any, res: any) {
     }
 
     res.json({ received: true });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error handling webhook:', error);
     res.status(500).json({ error: error.message });
   }
 }
-
-// For Google Cloud Functions
-export const stripeWebhook = handleStripeWebhook;
