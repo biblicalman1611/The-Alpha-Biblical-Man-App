@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 // Final Fight Bible Radio (RadioBOSS Stream)
-const STREAM_URL = "https://c12.radioboss.fm/stream/453";
+const STREAM_URL = "https://c13.radioboss.fm:8639/stream";
 const EXTERNAL_STREAM_URL = "https://www.finalfightbibleradio.com";
 
 const RadioPlayer: React.FC = () => {
